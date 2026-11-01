@@ -878,7 +878,8 @@ function details(text) {
   let when = null;
   if (w) {
     const x = w[0].toLowerCase(), n = (x.match(/\d+/) || [""])[0];
-    when = /[ऀ-ॿ]/.test(x) ? { en: x, hi: x }
+    // A Hindi deadline still needs an English version for the English comic.
+    when = /[ऀ-ॿ]/.test(x) ? { en: x === "आज रात" ? "tonight" : x === "आज" ? "today" : x === "कल" ? "tomorrow" : "within " + n + " hours", hi: x }
       : x === "tonight" ? { en: "tonight", hi: "आज रात" } : x === "today" ? { en: "today", hi: "आज" } : x === "tomorrow" ? { en: "tomorrow", hi: "कल" }
       : /min/.test(x) ? { en: x, hi: n + " मिनट में" } : { en: x, hi: n + " घंटे में" };
   }
