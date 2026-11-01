@@ -70,6 +70,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
 
 .desk { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 22px; align-items: start; }
 @media (max-width: 860px) { .desk { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) { .helpline { text-align: left; } }
 
 .panel { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .label { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0; }
@@ -216,7 +217,7 @@ footer a { color: var(--accent); }
         <p class="small" style="margin-bottom:8px" data-t="tryEx"></p>
         <div class="examples" id="examples"></div>
       </div>
-      <label class="drop" id="drop">
+      <label class="drop" id="drop" hidden>
         <input type="file" id="shot" accept="image/*">
         <span id="drop-text"></span>
       </label>
@@ -224,7 +225,7 @@ footer a { color: var(--accent); }
         <button class="primary" id="check" data-t="check"></button>
         <button class="secondary" id="ask" data-t="ask" hidden></button>
       </div>
-      <p class="small" data-t="privacy"></p>
+      <p class="small" id="privacy"></p>
     </section>
 
     <section class="panel" aria-live="polite" id="out">
@@ -313,6 +314,7 @@ const UI = {
     drop: "Or add a screenshot of the message (read by Claude)", attached: " attached", remove: "Remove",
     check: "Check message", ask: "Ask Claude for a second opinion",
     privacy: "The quick check runs on this page and sends nothing anywhere. The second opinion sends the message to Claude on your own account.",
+    privacyLocal: "The check runs on this page and sends nothing anywhere.",
     m0: "Looks fine", m1: "Be careful", m2: "Likely scam",
     spotted: "What we spotted", todoLabel: "What to do now", whatsReal: "What's real: ",
     comicTitle: "What happens if you fall for it",
@@ -362,6 +364,7 @@ const UI = {
     drop: "या मैसेज का स्क्रीनशॉट जोड़ें (Claude पढ़ेगा)", attached: " जुड़ गया", remove: "हटाएँ",
     check: "मैसेज जाँचें", ask: "Claude से दूसरी राय लें",
     privacy: "तुरंत जाँच इसी पेज पर होती है, कुछ भी कहीं नहीं भेजा जाता। दूसरी राय के लिए मैसेज आपके अपने अकाउंट से Claude को भेजा जाता है।",
+    privacyLocal: "जाँच इसी पेज पर होती है, कुछ भी कहीं नहीं भेजा जाता।",
     m0: "ठीक लगता है", m1: "सावधान रहें", m2: "फ्रॉड लगता है",
     spotted: "हमें क्या मिला", todoLabel: "अब क्या करें", whatsReal: "असल में: ",
     comicTitle: "अगर आप इसमें फँस जाते तो क्या होता",
@@ -1003,6 +1006,7 @@ function renderComic(panels, noteText, quote) {
     const d = document.createElement("figure");
     d.className = "cpanel" + (last ? " ending" : "");
     d.style.margin = "0";
+    d.style.background = SCENE_BG[last ? "safe" : pn.scene] || "#ffffff";
     d.innerHTML = `<figcaption class="cap"><span></span><div></div></figcaption>${sceneSvg(last ? "safe" : pn.scene)}`;
     d.querySelector(".cap span").textContent = last ? "✓" : String(i + 1);
     const capText = d.querySelector(".cap div");
@@ -1025,7 +1029,7 @@ function localComic(r, text) {
   const who = ELDERS[ELDER][lang];
   const ctx = { ...who };
   for (const k of ["first", "fee", "big", "when", "brand", "agency"]) {
-    const v = d[k] || s.def[k];
+    const v = d[k] || (k === "first" && d.fee) || s.def[k];
     if (v) ctx[k] = typeof v === "string" ? v : v[lang];
   }
   // Panel 1 quotes the strongest part of the real message.
@@ -1117,6 +1121,7 @@ function applyLang() {
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t(el.dataset.t); });
   $("footer").innerHTML = t("footer");
+  $("privacy").textContent = t(sample ? "privacy" : "privacyLocal");
   $("acc-note").innerHTML = t("accNote");
   $("msg").placeholder = t("placeholder");
   $("l-en").setAttribute("aria-pressed", lang === "en");
@@ -1183,7 +1188,11 @@ function clearAi() { ctl?.abort(); aiResult = null; $("ai").hidden = true; }
 
 (async () => {
   try { sample = await window.claude?.use?.("sample"); } catch { sample = null; }
-  if (sample) $("ask").hidden = false;
+  if (sample) {
+    $("ask").hidden = false;
+    $("drop").hidden = false;
+    $("privacy").textContent = t("privacy");
+  }
 })();
 
 function renderAi(a) {
