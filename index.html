@@ -1,0 +1,1285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Paste a suspicious SMS, WhatsApp or email in English or Hindi to see the scam risk, the tricks used, and a comic of what would happen if you fell for it.">
+<style>
+/* The same small reset claude.ai adds around the app */
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; font: 14px system-ui, -apple-system, "Segoe UI", sans-serif; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<title>ScamShield</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600;800&display=swap">
+<style>
+/* Layout: a two-pane "inspection desk". The message goes in on the left; the verdict, read like an
+   official stamp, comes out on the right, followed by a comic of how the scam would play out.
+   Large hyperlegible type for older readers, in English and Hindi. */
+:root {
+  --bg: #eef1f5;
+  --paper: #ffffff;
+  --ink: #14233a;
+  --muted: #56647a;
+  --line: #d3dae4;
+  --accent: #1d4fd8;
+  --accent-ink: #ffffff;
+  --scam: #c22a2a;
+  --scam-soft: #fde7e5;
+  --warn: #a35a00;
+  --warn-soft: #fff1d6;
+  --safe: #17784a;
+  --safe-soft: #e0f4e8;
+  --mark: #ffe08a;
+  --comic-ink: #1f2430;
+  --font-display: "Bricolage Grotesque", "Noto Sans Devanagari", "Avenir Next", "Segoe UI", sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Noto Sans Devanagari", "Verdana", "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "Noto Sans Devanagari", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1420; --paper: #152032; --ink: #e6ecf5; --muted: #9aa8bd; --line: #2a3a52;
+    --accent: #7aa2ff; --accent-ink: #0d1420;
+    --scam: #ff7b72; --scam-soft: #3a1a1c; --warn: #f0b85a; --warn-soft: #3a2b12;
+    --safe: #5fd39a; --safe-soft: #12301f; --mark: #6b5310;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1420; --paper: #152032; --ink: #e6ecf5; --muted: #9aa8bd; --line: #2a3a52;
+  --accent: #7aa2ff; --accent-ink: #0d1420;
+  --scam: #ff7b72; --scam-soft: #3a1a1c; --warn: #f0b85a; --warn-soft: #3a2b12;
+  --safe: #5fd39a; --safe-soft: #12301f; --mark: #6b5310;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+html[lang="hi"] body { line-height: 1.7; }
+.wrap { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+
+header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
+.brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.brand svg { flex: none; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 42px); line-height: 1; margin: 0; letter-spacing: -0.02em; }
+.tag { margin: 4px 0 0; color: var(--muted); font-size: 16px; }
+.head-right { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+.helpline { font-size: 15px; color: var(--muted); text-align: right; }
+.helpline b { color: var(--ink); font-family: var(--font-display); font-size: 22px; letter-spacing: 0.02em; }
+
+.langs { display: inline-flex; border: 1.5px solid var(--accent); border-radius: 999px; overflow: hidden; }
+.langs button { font: 700 16px var(--font-body); padding: 8px 16px; border: none; background: transparent; color: var(--accent); cursor: pointer; }
+.langs button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+
+.desk { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 22px; align-items: start; }
+@media (max-width: 860px) { .desk { grid-template-columns: minmax(0, 1fr); } }
+
+.panel { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.label { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0; }
+html[lang="hi"] .label { letter-spacing: 0; font-size: 15px; }
+h2 { font-family: var(--font-display); font-weight: 600; font-size: 22px; margin: 0; text-wrap: balance; }
+
+textarea {
+  width: 100%; min-height: 190px; resize: vertical; padding: 14px;
+  font: 17px/1.5 var(--font-body); color: var(--ink); background: var(--bg);
+  border: 1.5px solid var(--line); border-radius: 10px;
+}
+textarea:focus-visible, button:focus-visible, .drop:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.examples { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: 600 14px var(--font-body); padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer; }
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip.safe::before { content: "✓ "; color: var(--safe); }
+
+.drop { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px dashed var(--line); border-radius: 10px; color: var(--muted); font-size: 15px; cursor: pointer; }
+.drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.drop img { width: 44px; height: 44px; object-fit: cover; border-radius: 6px; }
+.drop .x { margin-left: auto; }
+
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+button.primary, button.secondary {
+  font: 700 17px var(--font-body); padding: 13px 20px; border-radius: 10px; cursor: pointer; border: 1.5px solid var(--accent);
+}
+button.primary { background: var(--accent); color: var(--accent-ink); }
+button.secondary { background: transparent; color: var(--accent); }
+button:disabled { opacity: 0.5; cursor: default; }
+button.link { background: none; border: none; color: var(--accent); font: 600 15px var(--font-body); cursor: pointer; padding: 4px; text-decoration: underline; }
+.small { font-size: 14px; color: var(--muted); margin: 0; }
+
+/* Verdict */
+.verdict { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px 22px; align-items: center; }
+.stamp {
+  width: 132px; height: 132px; border-radius: 50%; border: 5px double currentColor;
+  display: grid; place-content: center; text-align: center; transform: rotate(-8deg);
+  font-family: var(--font-display); font-weight: 800; line-height: 1.05;
+}
+.stamp .pct { font-size: 40px; font-variant-numeric: tabular-nums; }
+.stamp .word { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; padding: 0 10px; }
+html[lang="hi"] .stamp .word { letter-spacing: 0; font-size: 15px; }
+.v-scam { color: var(--scam); } .v-warn { color: var(--warn); } .v-safe { color: var(--safe); }
+.verdict h2 { font-size: 28px; }
+.verdict p { margin: 4px 0 0; }
+@media (max-width: 480px) { .verdict { grid-template-columns: minmax(0, 1fr); justify-items: start; } }
+
+.meter { position: relative; height: 12px; border-radius: 6px; background: linear-gradient(90deg, var(--safe) 0 25%, var(--warn) 25% 60%, var(--scam) 60% 100%); opacity: 0.9; }
+.meter i { position: absolute; top: -5px; width: 4px; height: 22px; background: var(--ink); border-radius: 2px; transform: translateX(-50%); transition: left 0.5s ease; }
+.meter-scale { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+
+.msg { font-family: var(--font-mono); font-size: 15px; line-height: 1.7; background: var(--bg); border-radius: 10px; padding: 14px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 260px; overflow-y: auto; }
+.msg mark { background: var(--mark); color: inherit; border-radius: 3px; padding: 0 2px; }
+.msg mark sup { font: 700 11px var(--font-body); color: var(--scam); margin-left: 2px; }
+
+.tricks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.trick { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 4px 12px; padding: 12px 14px; border-radius: 10px; background: var(--scam-soft); }
+.trick.mild { background: var(--warn-soft); }
+.trick.good { background: var(--safe-soft); }
+.trick .n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-content: center; font: 700 14px var(--font-body); background: var(--paper); color: var(--scam); }
+.trick.mild .n { color: var(--warn); } .trick.good .n { color: var(--safe); }
+.trick b { font-size: 17px; }
+.trick p { grid-column: 2; margin: 0; }
+.trick .real { grid-column: 2; font-size: 15px; color: var(--muted); }
+.trick.plain { grid-template-columns: minmax(0, 1fr); }
+.trick.plain p, .trick.plain .real { grid-column: 1; }
+
+.todo { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+.todo li::marker { font-weight: 700; color: var(--accent); }
+
+/* Comic: fixed print palette, like a pamphlet, in both themes */
+.comic-wrap { display: flex; flex-direction: column; gap: 10px; }
+.comic-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 12px; }
+.comic-head h2 { font-size: 22px; }
+.comic { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 460px) { .comic { grid-template-columns: minmax(0, 1fr); } }
+.cpanel {
+  background: #ffffff; color: var(--comic-ink); border: 3px solid var(--comic-ink); border-radius: 6px;
+  display: flex; flex-direction: column; overflow: hidden; animation: rise 0.45s ease both;
+}
+.cpanel:nth-child(2) { animation-delay: 0.12s; } .cpanel:nth-child(3) { animation-delay: 0.24s; }
+.cpanel:nth-child(4) { animation-delay: 0.36s; } .cpanel:nth-child(5) { animation-delay: 0.48s; }
+@keyframes rise { from { transform: translateY(8px); } to { transform: none; } }
+.cpanel svg { display: block; width: 100%; height: auto; }
+.from-msg { display: block; margin-top: 4px; font: italic 400 13px/1.4 var(--font-mono); color: #4a4f5a; overflow-wrap: anywhere; }
+.cap { padding: 8px 10px; font: 600 15px/1.4 var(--font-body); background: #fff6c2; border-bottom: 3px solid var(--comic-ink); display: flex; gap: 8px; }
+.cap span { flex: none; font: 800 14px var(--font-display); background: var(--comic-ink); color: #fff6c2; border-radius: 4px; padding: 0 6px; height: 22px; line-height: 22px; }
+.cpanel.ending { grid-column: 1 / -1; border-color: #1e7a46; }
+.cpanel.ending .cap { background: #d6f5e1; border-color: #1e7a46; font-size: 17px; }
+.cpanel.ending .cap span { background: #1e7a46; color: #d6f5e1; }
+.cpanel.ending svg { max-height: 180px; }
+@media (prefers-reduced-motion: reduce) { .cpanel { animation: none; } .meter i { transition: none; } }
+
+.ai { border-top: 1px solid var(--line); padding-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+.ai-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.pill { font: 700 13px var(--font-body); letter-spacing: 0.04em; padding: 4px 10px; border-radius: 999px; }
+.pill.v-scam { background: var(--scam-soft); } .pill.v-warn { background: var(--warn-soft); } .pill.v-safe { background: var(--safe-soft); }
+.ai-sum { font-size: 19px; margin: 0; }
+.quote { font-family: var(--font-mono); font-size: 14px; }
+.status { font-size: 15px; color: var(--muted); margin: 0; }
+
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.rules div { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.rules b { display: block; font-family: var(--font-display); font-size: 18px; margin-bottom: 4px; }
+.rules p { margin: 0; font-size: 15px; color: var(--muted); }
+.acc { display: flex; flex-direction: column; gap: 12px; }
+.acc-intro { margin: 0; max-width: 72ch; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.tile { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.tile b { font: 800 32px var(--font-display); font-variant-numeric: tabular-nums; }
+.tile span { font-size: 15px; color: var(--muted); }
+.acc a { color: var(--accent); }
+footer { font-size: 14px; color: var(--muted); }
+footer a { color: var(--accent); }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <svg width="52" height="58" viewBox="0 0 52 58" aria-hidden="true">
+        <path d="M26 2 L49 10 V28 C49 42 39 52 26 56 C13 52 3 42 3 28 V10 Z" fill="var(--accent)"/>
+        <path d="M16 29 L23 36 L37 21" stroke="var(--accent-ink)" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <h1>ScamShield</h1>
+        <p class="tag" data-t="tag"></p>
+      </div>
+    </div>
+    <div class="head-right">
+      <div class="langs" role="group" aria-label="Language">
+        <button type="button" id="l-en" aria-pressed="true">English</button>
+        <button type="button" id="l-hi" aria-pressed="false" lang="hi">हिंदी</button>
+      </div>
+      <div class="helpline"><span data-t="helpline"></span><br><b>1930</b></div>
+    </div>
+  </header>
+
+  <div class="desk">
+    <section class="panel" aria-labelledby="in-h">
+      <p class="label" id="in-h" data-t="msgLabel"></p>
+      <textarea id="msg" aria-labelledby="in-h"></textarea>
+      <div>
+        <p class="small" style="margin-bottom:8px" data-t="tryEx"></p>
+        <div class="examples" id="examples"></div>
+      </div>
+      <label class="drop" id="drop">
+        <input type="file" id="shot" accept="image/*">
+        <span id="drop-text"></span>
+      </label>
+      <div class="row">
+        <button class="primary" id="check" data-t="check"></button>
+        <button class="secondary" id="ask" data-t="ask" hidden></button>
+      </div>
+      <p class="small" data-t="privacy"></p>
+    </section>
+
+    <section class="panel" aria-live="polite" id="out">
+      <div class="verdict">
+        <div class="stamp" id="stamp"><span class="pct" id="pct">0%</span><span class="word" id="word"></span></div>
+        <div>
+          <h2 id="v-title"></h2>
+          <p id="v-sub"></p>
+        </div>
+      </div>
+      <div>
+        <div class="meter"><i id="needle" style="left:0%"></i></div>
+        <div class="meter-scale"><span data-t="m0"></span><span data-t="m1"></span><span data-t="m2"></span></div>
+      </div>
+
+      <div id="msg-wrap" hidden>
+        <p class="label" style="margin-bottom:8px" data-t="spotted"></p>
+        <div class="msg" id="msg-view"></div>
+      </div>
+      <ol class="tricks" id="tricks"></ol>
+
+      <div class="comic-wrap" id="comic-wrap" hidden>
+        <div class="comic-head">
+          <h2 data-t="comicTitle"></h2>
+          <span class="small" id="comic-note"></span>
+        </div>
+        <div class="comic" id="comic"></div>
+      </div>
+
+      <div id="todo-wrap" hidden>
+        <p class="label" style="margin-bottom:8px" data-t="todoLabel"></p>
+        <ol class="todo" id="todo"></ol>
+      </div>
+
+      <div class="row">
+        <button class="link" id="copy" hidden data-t="copy"></button>
+        <span class="small" id="copy-note"></span>
+      </div>
+
+      <div class="ai" id="ai" hidden>
+        <div class="ai-head">
+          <p class="label" data-t="aiLabel"></p>
+          <span class="pill" id="ai-pill"></span>
+        </div>
+        <p class="status" id="ai-status"></p>
+        <p class="ai-sum" id="ai-sum"></p>
+        <ul class="tricks" id="ai-tricks"></ul>
+        <ol class="todo" id="ai-todo"></ol>
+      </div>
+    </section>
+  </div>
+
+  <section aria-labelledby="rules-h" style="display:flex;flex-direction:column;gap:12px">
+    <h2 id="rules-h" data-t="rulesTitle"></h2>
+    <div class="rules">
+      <div><b data-t="r1t"></b><p data-t="r1"></p></div>
+      <div><b data-t="r2t"></b><p data-t="r2"></p></div>
+      <div><b data-t="r3t"></b><p data-t="r3"></p></div>
+      <div><b data-t="r4t"></b><p data-t="r4"></p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="acc-h" class="acc">
+    <h2 id="acc-h" data-t="accTitle"></h2>
+    <p class="acc-intro" data-t="accIntro"></p>
+    <div class="tiles">
+      <div class="tile"><b>77%</b><span data-t="acc1"></span></div>
+      <div class="tile"><b>95%</b><span data-t="acc2"></span></div>
+      <div class="tile"><b>1.1%</b><span data-t="acc3"></span></div>
+      <div class="tile"><b>3.5%</b><span data-t="acc4"></span></div>
+    </div>
+    <p class="small" id="acc-note"></p>
+  </section>
+
+  <footer id="footer"></footer>
+</div>
+
+<script>
+// ---------- Page text ----------
+const UI = {
+  en: {
+    tag: "Paste a suspicious SMS, WhatsApp or email. See how likely it is a scam, and why.",
+    helpline: "Lost money? Call the cyber fraud helpline",
+    msgLabel: "The message", placeholder: "Paste or type the message here",
+    tryEx: "Try an example:",
+    drop: "Or add a screenshot of the message (read by Claude)", attached: " attached", remove: "Remove",
+    check: "Check message", ask: "Ask Claude for a second opinion",
+    privacy: "The quick check runs on this page and sends nothing anywhere. The second opinion sends the message to Claude on your own account.",
+    m0: "Looks fine", m1: "Be careful", m2: "Likely scam",
+    spotted: "What we spotted", todoLabel: "What to do now", whatsReal: "What's real: ",
+    comicTitle: "What happens if you fall for it",
+    comicNoteLocal: "A typical story for this kind of scam",
+    comicNoteAi: "Story written by Claude for this message",
+    ending: "The safe ending", fromMsg: "From the message:",
+    accTitle: "How well does the quick check work?",
+    accIntro: "We tested it on 2,272 Indian SMS from a public dataset. We read every message marked spam by hand and split it into real scams (179) and normal adverts or notices (715). The rules were improved using two thirds of the messages, then tested once on the third kept aside. These numbers are from that unseen third.",
+    acc1: "of scams marked \"likely scam\"", acc2: "of scams flagged at least \"be careful\"", acc3: "of personal messages wrongly flagged", acc4: "of adverts and notices wrongly flagged",
+    accNote: 'Dataset: <a href="https://huggingface.co/datasets/carnageiron/scam-ham-india" target="_blank" rel="noopener">scam-ham-india</a> (Apache-2.0). Most scam messages in it are samples written for research, and none are in Hindi, so real-world results may be lower. Hindi rules were checked on 12 messages we wrote ourselves. Before this testing, the quick check marked only 35% of these scams as likely scams and flagged 41% of adverts.',
+    copy: "Copy result to send to family", copied: "Copied. Paste it in your family chat.", copyFail: "Copy did not work here. Select the text above instead.",
+    aiLabel: "Second opinion from Claude", aiThinking: "Claude is reading the message. This can take up to a minute...",
+    aiNeed: "Paste a message or add a screenshot first.",
+    empty: "Paste a message to begin",
+    rulesTitle: "Four rules that stop most scams",
+    r1t: "A PIN is only for paying", r1: "You never enter your UPI PIN or scan a QR code to receive money. If someone says otherwise, they are taking money from you.",
+    r2t: "Never share an OTP", r2: "No bank, courier, police officer or company will ever ask you for an OTP. Not on call, not on WhatsApp.",
+    r3t: "Police do not arrest on video calls", r3: "There is no such thing as a \"digital arrest\". CBI, customs and police never ask for money over a call.",
+    r4t: "Fear and hurry are the trick", r4: "\"Today only\", \"account will be blocked\", \"power will be cut tonight\". Stop, hang up, and call the real number yourself.",
+    footer: 'Report a fraud message at <a href="https://sancharsaathi.gov.in/sfc/" target="_blank" rel="noopener">Sanchar Saathi (Chakshu)</a>. Report money lost at <a href="https://cybercrime.gov.in" target="_blank" rel="noopener">cybercrime.gov.in</a> or call 1930 as soon as possible. ScamShield gives a guess, not a guarantee. When in doubt, ask someone you trust.',
+    bands: [
+      { word: "low risk", title: "No common scam tricks found", sub: "It looks ordinary, but stay alert. Never share an OTP or PIN." },
+      { word: "be careful", title: "Be careful with this one", sub: "Some warning signs. Check with the company yourself before doing anything." },
+      { word: "likely scam", title: "This looks like a scam", sub: "Do not click, call back, pay or share anything." },
+    ],
+    todo: [
+      ["Still never share an OTP or PIN, even if the message looks real.", "If anything feels off, ask someone you trust."],
+      ["Do not use the link or number in the message.", "Call the company on the number printed on your card or its official website.", "Ask a family member to look at it with you."],
+      ["Do not click the link, call the number, or reply.", "Never share an OTP, UPI PIN, card number or password.", "Report the message on Sanchar Saathi (Chakshu), then delete it and block the sender.", "If you already paid or shared details, call 1930 right now and tell your bank."],
+    ],
+    copyHead: (p, w) => `ScamShield check: ${p}% risk (${w})`, copyMsg: "Message", copyEnd: "Do not click links or share OTP/PIN. Fraud helpline: 1930",
+    errors: {
+      not_granted: "Claude was not allowed for this page. The quick check above still works.",
+      rate_limited: "Too many checks at once. Wait a minute and try again.",
+      invalid_json: "Claude's answer came back garbled. Press the button to try again.",
+      prompt_too_large: "That message is too long. Paste only the suspicious part.",
+      image_rejected: "That image could not be read. Try a clearer screenshot.",
+      images_unavailable: "Screenshots are not available in this view. Paste the text instead.",
+      other: "Claude could not answer right now. The quick check above still works.",
+    },
+  },
+  hi: {
+    tag: "शक वाला SMS, WhatsApp या ईमेल यहाँ डालें। जानें कि यह फ्रॉड है या नहीं, और क्यों।",
+    helpline: "पैसे गए? साइबर फ्रॉड हेल्पलाइन पर कॉल करें",
+    msgLabel: "मैसेज", placeholder: "मैसेज यहाँ पेस्ट करें या लिखें",
+    tryEx: "कोई उदाहरण आज़माएँ:",
+    drop: "या मैसेज का स्क्रीनशॉट जोड़ें (Claude पढ़ेगा)", attached: " जुड़ गया", remove: "हटाएँ",
+    check: "मैसेज जाँचें", ask: "Claude से दूसरी राय लें",
+    privacy: "तुरंत जाँच इसी पेज पर होती है, कुछ भी कहीं नहीं भेजा जाता। दूसरी राय के लिए मैसेज आपके अपने अकाउंट से Claude को भेजा जाता है।",
+    m0: "ठीक लगता है", m1: "सावधान रहें", m2: "फ्रॉड लगता है",
+    spotted: "हमें क्या मिला", todoLabel: "अब क्या करें", whatsReal: "असल में: ",
+    comicTitle: "अगर आप इसमें फँस जाते तो क्या होता",
+    comicNoteLocal: "इस तरह के फ्रॉड की एक आम कहानी",
+    comicNoteAi: "यह कहानी Claude ने इसी मैसेज के लिए लिखी है",
+    ending: "सुरक्षित अंत", fromMsg: "मैसेज में:",
+    accTitle: "तुरंत जाँच कितनी सही है?",
+    accIntro: "हमने इसे एक सार्वजनिक डेटासेट के 2,272 भारतीय SMS पर जाँचा। स्पैम कहे गए हर मैसेज को हमने ख़ुद पढ़कर असली फ्रॉड (179) और सामान्य विज्ञापन या सूचना (715) में बाँटा। दो-तिहाई मैसेज से नियम सुधारे, फिर बाकी एक-तिहाई पर एक बार जाँचा। ये आँकड़े उसी अनदेखे हिस्से के हैं।",
+    acc1: "फ्रॉड को \"फ्रॉड लगता है\" बताया", acc2: "फ्रॉड को कम से कम \"सावधान\" बताया", acc3: "निजी मैसेज ग़लती से संदिग्ध बताए", acc4: "विज्ञापन और सूचनाएँ ग़लती से संदिग्ध बताईं",
+    accNote: 'डेटासेट: <a href="https://huggingface.co/datasets/carnageiron/scam-ham-india" target="_blank" rel="noopener">scam-ham-india</a> (Apache-2.0)। इसके ज़्यादातर फ्रॉड मैसेज रिसर्च के लिए लिखे गए नमूने हैं, और कोई भी हिंदी में नहीं है, इसलिए असल दुनिया में नतीजे कम हो सकते हैं। हिंदी नियम हमारे लिखे 12 मैसेज पर जाँचे गए। इस जाँच से पहले, तुरंत जाँच इनमें से सिर्फ़ 35% फ्रॉड पकड़ती थी और 41% विज्ञापनों को संदिग्ध बताती थी।',
+    copy: "नतीजा कॉपी करें और परिवार को भेजें", copied: "कॉपी हो गया। अब फैमिली ग्रुप में पेस्ट करें।", copyFail: "यहाँ कॉपी नहीं हो पाया। ऊपर का टेक्स्ट चुनकर कॉपी करें।",
+    aiLabel: "Claude की दूसरी राय", aiThinking: "Claude मैसेज पढ़ रहा है। इसमें एक मिनट तक लग सकता है...",
+    aiNeed: "पहले मैसेज डालें या स्क्रीनशॉट जोड़ें।",
+    empty: "शुरू करने के लिए मैसेज डालें",
+    rulesTitle: "चार नियम जो ज़्यादातर फ्रॉड रोकते हैं",
+    r1t: "PIN सिर्फ़ पैसे भेजने के लिए", r1: "पैसे पाने के लिए कभी UPI PIN नहीं डालना पड़ता और न QR स्कैन करना पड़ता है। जो ऐसा कहे, वह आपसे पैसे ले रहा है।",
+    r2t: "OTP कभी न बताएं", r2: "कोई बैंक, कूरियर, पुलिस या कंपनी कभी OTP नहीं माँगती। न फ़ोन पर, न WhatsApp पर।",
+    r3t: "पुलिस वीडियो कॉल पर गिरफ़्तार नहीं करती", r3: "\"डिजिटल अरेस्ट\" जैसी कोई चीज़ नहीं होती। CBI, कस्टम या पुलिस कभी फ़ोन पर पैसे नहीं माँगते।",
+    r4t: "डर और जल्दबाज़ी ही चाल है", r4: "\"सिर्फ़ आज\", \"खाता बंद हो जाएगा\", \"आज रात बिजली कटेगी\"। रुकें, फ़ोन काटें, और असली नंबर पर ख़ुद कॉल करें।",
+    footer: 'फ्रॉड मैसेज की शिकायत <a href="https://sancharsaathi.gov.in/sfc/" target="_blank" rel="noopener">Sanchar Saathi (चक्षु)</a> पर करें। पैसे गए हों तो <a href="https://cybercrime.gov.in" target="_blank" rel="noopener">cybercrime.gov.in</a> पर शिकायत करें या जल्द से जल्द 1930 पर कॉल करें। ScamShield सिर्फ़ अंदाज़ा देता है, गारंटी नहीं। शक हो तो किसी भरोसेमंद व्यक्ति से पूछें।',
+    bands: [
+      { word: "कम ख़तरा", title: "फ्रॉड की कोई आम चाल नहीं मिली", sub: "मैसेज सामान्य लगता है, फिर भी सावधान रहें। OTP या PIN कभी न बताएं।" },
+      { word: "सावधान", title: "इस मैसेज से सावधान रहें", sub: "कुछ ख़तरे के संकेत हैं। कुछ भी करने से पहले कंपनी से ख़ुद पता करें।" },
+      { word: "फ्रॉड", title: "यह फ्रॉड लगता है", sub: "लिंक न खोलें, कॉल न करें, पैसे न भेजें, कुछ न बताएं।" },
+    ],
+    todo: [
+      ["मैसेज असली लगे तब भी OTP या PIN कभी न बताएं।", "कुछ भी अजीब लगे तो किसी भरोसेमंद व्यक्ति से पूछें।"],
+      ["मैसेज में दिया लिंक या नंबर इस्तेमाल न करें।", "कंपनी को उस नंबर पर कॉल करें जो आपके कार्ड पर या उसकी असली वेबसाइट पर लिखा है।", "परिवार के किसी सदस्य को साथ में दिखाएँ।"],
+      ["लिंक न खोलें, नंबर पर कॉल न करें, जवाब न दें।", "OTP, UPI PIN, कार्ड नंबर या पासवर्ड कभी न बताएं।", "Sanchar Saathi (चक्षु) पर इस मैसेज की शिकायत करें, फिर इसे डिलीट करें और नंबर ब्लॉक करें।", "अगर पैसे भेज दिए हैं या जानकारी दे दी है, तो अभी 1930 पर कॉल करें और अपने बैंक को बताएं।"],
+    ],
+    copyHead: (p, w) => `ScamShield जाँच: ${p}% ख़तरा (${w})`, copyMsg: "मैसेज", copyEnd: "लिंक न खोलें, OTP/PIN न बताएं। फ्रॉड हेल्पलाइन: 1930",
+    errors: {
+      not_granted: "इस पेज को Claude की अनुमति नहीं मिली। ऊपर की तुरंत जाँच फिर भी काम करती है।",
+      rate_limited: "एक साथ बहुत सारी जाँच हो गईं। एक मिनट रुककर फिर कोशिश करें।",
+      invalid_json: "Claude का जवाब ठीक से नहीं आया। बटन फिर से दबाएँ।",
+      prompt_too_large: "मैसेज बहुत लंबा है। सिर्फ़ शक वाला हिस्सा डालें।",
+      image_rejected: "यह तस्वीर पढ़ी नहीं जा सकी। साफ़ स्क्रीनशॉट आज़माएँ।",
+      images_unavailable: "यहाँ स्क्रीनशॉट नहीं चल सकते। टेक्स्ट पेस्ट करें।",
+      other: "Claude अभी जवाब नहीं दे पाया। ऊपर की तुरंत जाँच फिर भी काम करती है।",
+    },
+  },
+};
+
+// ---------- Example messages (made up for the demo) ----------
+const EXAMPLES = [
+  { label: { en: "Fake KYC", hi: "नकली KYC" }, text: "Dear SBI customer, your YONO account will be BLOCKED today due to incomplete KYC. Update your PAN card immediately: http://sbi-kyc-update.xyz/verify Call 9876543210 for help." },
+  { label: { en: "KYC in Hindi", hi: "हिंदी KYC" }, text: "प्रिय ग्राहक, आपका SBI खाता आज रात 12 बजे बंद हो जाएगा। तुरंत अपना पैन कार्ड केवाईसी अपडेट करें: http://sbi-kyc-help.top/hi अधिक जानकारी के लिए 9123456780 पर कॉल करें।" },
+  { label: { en: "Parcel (Hinglish)", hi: "पार्सल (हिंग्लिश)" }, text: "Namaste ji, aapka parcel customs mein ruka hai. Turant Rs 49 fee jama karo warna parcel wapas chala jayega: https://bit.ly/ip-parcel" },
+  { label: { en: "UPI 'cashback'", hi: "UPI 'कैशबैक'" }, text: "Hello sir, I am calling from PhonePe. You got Rs 4,999 cashback. I have sent a collect request, just enter your UPI PIN to receive the money in your account." },
+  { label: { en: "Digital arrest", hi: "डिजिटल अरेस्ट" }, text: "This is Mumbai Cyber Crime Cell. A parcel with drugs in your name was seized by customs. An arrest warrant has been issued. Stay on video call, do not tell family. Transfer Rs 2,50,000 to RBI verification account to clear your name." },
+  { label: { en: "Electricity cut", hi: "बिजली कट" }, text: "प्रिय उपभोक्ता, आपकी बिजली आज रात 9:30 बजे काट दी जाएगी क्योंकि आपका पिछला बिल अपडेट नहीं हुआ है। तुरंत बिजली अधिकारी से 8123456721 पर संपर्क करें।" },
+  { label: { en: "Part-time job", hi: "पार्ट टाइम जॉब" }, text: "Hi! We are hiring for work from home. Like YouTube videos and earn Rs 3000 daily. Simple tasks, commission paid instantly. Join our Telegram: t.me/earnfast_hr" },
+  { label: { en: "'New number'", hi: "'नया नंबर'" }, text: "Hi Mum, this is my new number, I dropped my phone. Can you help me urgently? I need to pay a bill today, I will return it tomorrow. Please don't call, I can't talk right now." },
+  { label: { en: "Real OTP", hi: "असली OTP" }, safe: true, text: "आपका ओटीपी 739104 है। यह 10 मिनट के लिए मान्य है। इसे किसी के साथ शेयर न करें। - SBI" },
+  { label: { en: "Real delivery", hi: "असली डिलीवरी" }, safe: true, text: "Your Amazon order #408-5521347 with Boat Rockerz 450 has been delivered. Track or return at amazon.in/your-orders" },
+];
+
+// ---------- Pattern rules ----------
+// role: "ask" = what the scammer wants from you, "lure" = the bait or the fear, "style" = how it is written or sent.
+// A lure together with an ask is what makes a scam. w: points added. tone "mild" = weaker sign. story: which comic to show.
+// English patterns use \b; Devanagari patterns cannot (\b only knows ASCII letters).
+const RULES = [
+  // ---- Asks ----
+  { id: "pin", role: "ask", w: 45, story: "pin",
+    re: [/\b(re-?enter|enter|type|put)\b[^.\n]{0,30}\b(upi\s*)?pin\b/gi, /\bwith (your )?upi pin\b/gi, /\bcollect request\b/gi, /\bscan\b[^.\n]{0,20}\bqr\b[^.\n]{0,30}\b(receive|get|refund|cashback)/gi,
+         /\bpin\s*(daalo|dalo|daaliye|dalein|daalein|dal do)\b/gi, /(पिन|PIN)\s*(डालें|डालिए|डालो|दर्ज करें)/gi],
+    name: { en: "Asks for your PIN to 'receive' money", hi: "पैसे 'पाने' के लिए PIN माँग रहा है" },
+    why: { en: "A UPI PIN is only ever used to send money out. Nobody needs your PIN, or a QR scan, to pay you.", hi: "UPI PIN सिर्फ़ पैसे भेजने के लिए होता है। पैसे पाने के लिए कभी PIN या QR स्कैन की ज़रूरत नहीं होती।" },
+    real: { en: "Real refunds and cashback arrive on their own. You do nothing.", hi: "असली रिफंड या कैशबैक अपने आप खाते में आता है। आपको कुछ नहीं करना पड़ता।" } },
+  { id: "otp", role: "ask", w: 40, story: "otp",
+    re: [/(?<!\b(not|never|n'?t)\s+)\b(share|sharing|send|tell|forward|give|read)\b[^.\n]{0,30}\b(otp|verification code|\d[- ]digit code|code)\b/gi,
+         /\b(enter|type)\b[^.\n]{0,30}\b(otp|\d[- ]digit code|verification code)\b/gi,
+         /\botp\s*(batao|bataiye|bata do|bhejo|bhejiye)\b/gi, /(ओटीपी|OTP|कोड)\s*(बताएं|बताइए|बताओ|बता दीजिए|भेजें|भेजिए)/gi],
+    name: { en: "Wants your OTP or code", hi: "OTP या कोड माँग रहा है" },
+    why: { en: "An OTP or verification code is the key to your account. Whoever has it can take your money or your WhatsApp.", hi: "OTP या वेरिफ़िकेशन कोड आपके खाते की चाबी है। जिसके पास यह है, वह आपका पैसा या WhatsApp ले सकता है।" },
+    real: { en: "Banks and apps say 'do not share this OTP'. They never ask you to share it.", hi: "बैंक और ऐप कहते हैं 'OTP किसी को न बताएं'। वे कभी OTP नहीं माँगते।" } },
+  { id: "card", role: "ask", w: 40, story: "card",
+    re: [/\b(share|sharing|send|enter|entering|provide|give|tell)\b[^.\n]{0,35}\b(cvv|card number|card details|atm pin|expiry)\b/gi, /(सीवीवी|CVV|कार्ड नंबर)[^.।\n]{0,25}(बताएं|भेजें|शेयर|दें)/gi],
+    name: { en: "Asks for your card number or CVV", hi: "कार्ड नंबर या CVV माँग रहा है" },
+    why: { en: "With your card number and CVV, anyone can shop online with your money.", hi: "कार्ड नंबर और CVV से कोई भी आपके पैसे से ऑनलाइन ख़रीदारी कर सकता है।" },
+    real: { en: "Your bank already has your card details. It never asks for the CVV.", hi: "बैंक के पास आपके कार्ड की जानकारी पहले से है। वह कभी CVV नहीं माँगता।" } },
+  { id: "details", role: "ask", w: 35,
+    re: [/\b(share|sharing|send|enter|entering|provide|update|give|whatsapp)\b[^.\n]{0,15}\byour\b[^.\n]{0,25}\b(account number|bank details|bank account details|net ?banking (password|pin)|login (pin|password)|password|aadhaar number|details)\b/gi,
+         /\breply\b[^.\n]{0,20}\b(aadhaar|bank|account|details)\b/gi, /\bfill (them|it|the form)\b[^.\n]{0,30}\bsend\b/gi,
+         /(खाता संख्या|अकाउंट नंबर|बैंक (की )?जानकारी|पासवर्ड|आधार नंबर)[^.।\n]{0,25}(बताएं|भेजें|शेयर|दें|डालें)/g],
+    name: { en: "Asks for your bank details or password", hi: "बैंक की जानकारी या पासवर्ड माँग रहा है" },
+    why: { en: "Account numbers, passwords and Aadhaar details are exactly what a scammer needs to take over your account.", hi: "खाता नंबर, पासवर्ड और आधार की जानकारी से ठग आपका खाता अपने कब्ज़े में ले सकता है।" },
+    real: { en: "No prize, job or bank needs these over SMS or WhatsApp.", hi: "किसी इनाम, नौकरी या बैंक को यह जानकारी SMS या WhatsApp पर नहीं चाहिए।" } },
+  { id: "fee", role: "ask", w: 35,
+    re: [/\b(pay|paying|deposit|transfer)\b[^.\n]{0,40}\b(fee|fees|charges?|kit|deposit|insurance|gst|tax|processing|activate|activation|id card|uniform)\b/gi, /\b(registration|processing|verification|clearance|onboarding|security|refundable) (fee|charges?|deposit)\b/gi,
+         /\b(rs\.?|₹)\s?[\d,]+\s*(fee|fees)?\s*(jama|bhejo|bhejiye|transfer)\s*kar/gi, /(फीस|शुल्क|टैक्स)[^.।\n]{0,25}(भेजें|भेजिए|जमा करें|ट्रांसफर करें|भरें)/g],
+    name: { en: "Asks you to pay a fee first", hi: "पहले फीस भरने को कह रहा है" },
+    why: { en: "'Pay a small fee to get your prize, job or parcel' is the oldest trick. After the first fee comes another, and another.", hi: "'इनाम, नौकरी या पार्सल के लिए छोटी फीस भरें' सबसे पुरानी चाल है। पहली फीस के बाद दूसरी, फिर तीसरी आती है।" },
+    real: { en: "Real prizes, jobs and deliveries never ask you to pay to receive them.", hi: "असली इनाम, नौकरी या डिलीवरी पाने के लिए कभी पैसे नहीं भरने पड़ते।" } },
+  { id: "remote", role: "ask", w: 40, story: "remote",
+    re: [/\b(anydesk|teamviewer|quick ?support|rustdesk|airdroid)\b/gi, /\.apk\b/gi, /\b(download|install)\b[^.\n]{0,25}\b(apk|this app|the app from)\b/gi,
+         /\bapp\s*(download|install)\s*kar/gi, /ऐप\s*(डाउनलोड|इंस्टॉल)/g],
+    name: { en: "Asks you to install an app or APK", hi: "कोई ऐप या APK डालने को कह रहा है" },
+    why: { en: "Screen-sharing apps and APK files let the scammer see and control your phone, including your bank app.", hi: "स्क्रीन शेयर करने वाले ऐप और APK फ़ाइल से ठग आपका फ़ोन, और बैंक ऐप भी, देख और चला सकता है।" },
+    real: { en: "Banks never ask you to install anything from a link or over a call.", hi: "बैंक कभी लिंक या फ़ोन कॉल पर कोई ऐप डालने को नहीं कहते।" } },
+  { id: "clickto", role: "ask", w: 20,
+    re: [/\b(click|tap|contact|call|visit)\b[^.\n]{0,30}\b(to )?claim\b/gi, /\bclaim (your|the) (prize|reward|winnings|amount|money|cash)\b/gi, /\bclick\b[^.\n]{0,25}\b(reverse|cancel|stop|block)\b/gi, /(क्लेम करें|इनाम पाने के लिए (क्लिक|कॉल))/g],
+    name: { en: "Asks you to click or call to 'claim' money or stop a payment", hi: "पैसे 'पाने' या पेमेंट रोकने के लिए क्लिक या कॉल करने को कह रहा है" },
+    why: { en: "The link or number leads to someone who will ask for a fee, your bank details or an OTP.", hi: "लिंक या नंबर ऐसे व्यक्ति तक ले जाता है जो फीस, बैंक की जानकारी या OTP माँगेगा।" },
+    real: { en: "Real money never needs you to claim it through a link in an SMS.", hi: "असली पैसे के लिए SMS के लिंक से क्लेम नहीं करना पड़ता।" } },
+  { id: "replyyes", role: "ask", w: 35,
+    re: [/\b(confirm|verify)\b[^.\n]{0,20}\breply(ing)?\b[^.\n]{0,10}\byes\b/gi, /\breply(ing)? (with )?yes\b/gi],
+    name: { en: "Asks you to reply 'YES' to stop something", hi: "कुछ रोकने के लिए 'YES' लिखकर जवाब माँग रहा है" },
+    why: { en: "Replying tells scammers your number is active and that you are worried. A 'helpful' call usually follows.", hi: "जवाब देने से ठग को पता चलता है कि नंबर चालू है और आप घबराए हैं। फिर 'मदद' वाला कॉल आता है।" },
+    real: { en: "Banks never ask you to reply to an OTP message. If worried, call the number on your card.", hi: "बैंक कभी OTP मैसेज का जवाब नहीं माँगते। चिंता हो तो कार्ड पर लिखे नंबर पर कॉल करें।" } },
+
+  // ---- Lures ----
+  { id: "arrest", role: "lure", w: 45, story: "arrest",
+    re: [/\b(cbi|ncb|narcotics|cyber ?crime cell|crime branch|arrest warrant|digital arrest|money laundering|ed officer|enforcement directorate|customs (department|officer)|seized)\b/gi, /\b(video call|do not tell (your )?family|don'?t tell (anyone|family))\b/gi,
+         /\b(giraftar|giraftaar|police case|arrest ho)/gi, /(सीबीआई|गिरफ़्तार|गिरफ्तार|डिजिटल अरेस्ट|अरेस्ट वारंट|मनी लॉन्ड्रिंग|परिवार को (मत|न) बता)/g],
+    name: { en: "Threatens police, CBI or 'digital arrest'", hi: "पुलिस, CBI या 'डिजिटल अरेस्ट' की धमकी" },
+    why: { en: "Scammers pose as officers to frighten you into paying. Real police never 'arrest' anyone on a video call or ask for money to clear your name.", hi: "ठग अफ़सर बनकर डराते हैं ताकि आप पैसे भेज दें। असली पुलिस वीडियो कॉल पर किसी को गिरफ़्तार नहीं करती और नाम साफ़ करने के लिए पैसे नहीं माँगती।" },
+    real: { en: "Hang up and call 112 or visit your local police station yourself.", hi: "फ़ोन काटें और 112 पर कॉल करें, या ख़ुद नज़दीकी थाने जाएँ।" } },
+  { id: "kyc", role: "lure", w: 25, story: "kyc",
+    re: [/\b(re-?kyc|e-?kyc|kyc)\b/gi, /\b(pan|aadhaar|aadhar)\b[^.\n]{0,25}\b(update|link|verify|verification|expired?|re-verification|blocked|deactivat\w*)\b/gi, /(केवाईसी|पैन कार्ड|आधार)[^.।\n]{0,25}(अपडेट|लिंक)/g, /केवाईसी/g],
+    name: { en: "Fake KYC or PAN / Aadhaar update", hi: "नकली KYC या PAN / आधार अपडेट" },
+    why: { en: "'Update your KYC' is the most common bank scam in India. The link leads to a fake bank page that steals your login.", hi: "'अपना KYC अपडेट करें' भारत का सबसे आम बैंक फ्रॉड है। लिंक नकली बैंक पेज पर ले जाता है जो आपका लॉगिन चुरा लेता है।" },
+    real: { en: "Banks ask you to visit a branch or use their official app for KYC, never a link in an SMS.", hi: "KYC के लिए बैंक ब्रांच में या बैंक के असली ऐप में बुलाते हैं, SMS के लिंक से नहीं।" } },
+  { id: "threat", role: "lure", w: 20,
+    re: [/\byour\b[^.\n]{0,25}\b(account|card|sim|yono|wallet|number|connection|balance|services?)\b[^.\n]{0,35}\b(blocked|suspended|frozen|freeze|locked|deactivated|closed|stop working)\b/gi,
+         /\b(will be|has been|is)\s+(permanently\s+)?(blocked|suspended|deactivated|disconnected|frozen|locked)\b/gi,
+         /\b(suspicious|fraudulent) activity\b|\bunauthori[sz]ed (login|access)\b|\bunusual login\b|\btried logging\b|\bnew device\b|\blegal action\b|\bbeing ported\b|\bpassword (was|has been) changed\b|\bflagged\b/gi,
+         /\b(khata|account|sim)\b[^.\n]{0,30}\b(band|block)\s*(ho|kar)/gi, /(खाता|अकाउंट|सिम|कार्ड)[^.।\n]{0,30}(बंद|ब्लॉक)/g],
+    name: { en: "Scares you about your account", hi: "खाते के बारे में डरा रहा है" },
+    why: { en: "'Blocked', 'suspicious login', 'legal action': fear is used so you act without thinking.", hi: "'ब्लॉक', 'संदिग्ध लॉगिन', 'क़ानूनी कार्रवाई': डर दिखाकर आपसे बिना सोचे काम करवाया जाता है।" },
+    real: { en: "A real bank gives notice through its app and branch, with time to respond.", hi: "असली बैंक ऐप और ब्रांच के ज़रिए पहले से सूचना देता है और समय देता है।" } },
+  { id: "debit", role: "lure", w: 12, tone: "mild", story: "debit",
+    re: [/\b(debited|charged)\b[^\n]{0,80}\b(not done by you|did not make|didn'?t make|unauthori[sz]ed|if not you|wasn'?t you|reverse)\b/gi],
+    name: { en: "Says money left your account that you did not spend", hi: "कहता है कि आपके खाते से ऐसे पैसे कटे जो आपने नहीं ख़र्च किए" },
+    why: { en: "A fake 'big debit' alert makes you panic and share an OTP to 'stop' it. That OTP is what actually takes the money.", hi: "नकली 'बड़ी रकम कटी' वाला अलर्ट आपको घबराता है ताकि आप 'रोकने' के लिए OTP बता दें। असल में वही OTP पैसे ले जाता है।" },
+    real: { en: "Open your bank app to check. Real alerts give a toll-free number and never ask for an OTP.", hi: "बैंक ऐप खोलकर देखें। असली अलर्ट में टोल-फ्री नंबर होता है और कभी OTP नहीं माँगा जाता।" } },
+  { id: "power", role: "lure", w: 30, story: "power",
+    re: [/\b(electricity|power|light)\b[^\n]{0,60}\b(will be (cut|disconnected)|disconnection|disconnected (today|tonight))/gi, /\belectricity (officer|bill)\b[^\n]{0,40}\b(failed|pending|not updated|disconnect\w*)/gi, /\bbijli\b[^.\n]{0,40}\b(kat|cut|band)/gi, /बिजली[^।\n]{0,60}(कट|काट|बंद)/g, /बिजली (अधिकारी|अफ़सर|अफसर)/g],
+    name: { en: "Electricity will be 'cut tonight'", hi: "'आज रात बिजली कट जाएगी'" },
+    why: { en: "A known scam: a fake officer number, then a screen-sharing app or small 'fee' that empties your account.", hi: "यह जाना-माना फ्रॉड है: नकली अफ़सर का नंबर, फिर स्क्रीन शेयर ऐप या छोटी 'फीस', और खाता ख़ाली।" },
+    real: { en: "Electricity boards send a written notice and never ask you to call a mobile number.", hi: "बिजली विभाग लिखित नोटिस भेजता है और किसी मोबाइल नंबर पर कॉल करने को नहीं कहता।" } },
+  { id: "parcel", role: "lure", w: 15, story: "parcel",
+    re: [/\b(parcel|courier|shipment|package)\b[^.\n]{0,40}\b(hold|held|stuck|returned|undelivered|failed|seized|customs|address|ruka|wapas)\b/gi, /\b(fedex|dhl|india ?post|blue ?dart|dtdc)\b/gi, /(पार्सल|कूरियर)[^.।\n]{0,40}(रुका|वापस|कस्टम|पता)/g],
+    name: { en: "Parcel or courier 'on hold'", hi: "पार्सल या कूरियर 'रुका हुआ है'" },
+    why: { en: "Fake delivery messages ask for a small 'fee' or 'address update' to steal card details.", hi: "नकली डिलीवरी मैसेज छोटी 'फीस' या 'पता अपडेट' के बहाने आपके कार्ड की जानकारी चुराते हैं।" },
+    real: { en: "Check orders only in the shopping app you used. India Post does not send links for fees.", hi: "ऑर्डर सिर्फ़ उसी शॉपिंग ऐप में देखें जहाँ से ख़रीदा था। India Post फीस के लिए लिंक नहीं भेजता।" } },
+  { id: "prize", role: "lure", w: 30, story: "prize",
+    re: [/\b(lottery|lucky draw|lucky winner|winner|you(?:'ve| have)? won|has won|have won|won a|winning|jackpot|kbc|bonanza|selected to win|cash prize|giveaway|inaam)\b/gi, /\bcashback\b[^.\n]{0,30}\b(rs\.?|₹|inr)\s?[\d,]{4,}/gi, /(इनाम|लॉटरी|लकी ड्रा|करोड़पति|आपने जीत|जीते हैं)/g],
+    name: { en: "Prize, lottery or big cashback", hi: "इनाम, लॉटरी या बड़ा कैशबैक" },
+    why: { en: "If you did not enter a contest, you did not win one. The 'prize' always needs a fee or your details first.", hi: "जिस प्रतियोगिता में हिस्सा नहीं लिया, उसमें इनाम नहीं मिलता। इस 'इनाम' के लिए पहले फीस या आपकी जानकारी माँगी जाती है।" },
+    real: { en: "Real cashback shows up inside the app. It never needs a call, fee or PIN.", hi: "असली कैशबैक ऐप के अंदर दिखता है। उसके लिए कॉल, फीस या PIN की ज़रूरत नहीं होती।" } },
+  { id: "wallet", role: "lure", w: 30, story: "wallet",
+    re: [/\b(wallet|b[o0]nus|credited|added)\b[^\n]{0,80}\b(withdraw\w*|m[o0]ve to y[o0]ur bank|move to your bank|transfer to (your )?bank)\b/gi, /\breceive (rs\.?|₹)\s?[\d,]+ to (your )?wallet\b/gi],
+    name: { en: "Free money 'credited' that you must withdraw", hi: "'मुफ़्त पैसे आए हैं', निकालने को कह रहा है" },
+    why: { en: "Nobody puts free money in a wallet you never opened. The 'withdraw' link asks for your bank login or a fee.", hi: "जिस वॉलेट को आपने कभी खोला नहीं, उसमें कोई मुफ़्त पैसे नहीं डालता। 'निकालें' वाला लिंक बैंक लॉगिन या फीस माँगता है।" },
+    real: { en: "Real credits show up in your own bank or app without any link.", hi: "असली पैसा बिना किसी लिंक के आपके बैंक या ऐप में दिखता है।" } },
+  { id: "loan", role: "lure", w: 25, story: "loan",
+    re: [/\bl[o0]an\b[^\n]{0,50}\b(approve[d]?|sanction\w*|ready to be processed|credited)\b/gi, /\bzero documentation\b/gi, /(लोन|कर्ज़)[^.।\n]{0,30}(मंज़ूर|मंजूर|तैयार)/g],
+    name: { en: "Instant loan 'approved' that you never asked for", hi: "बिना माँगे 'मंज़ूर' हुआ लोन" },
+    why: { en: "Fake loan apps ask for a 'processing fee' and access to your contacts and photos, then threaten you.", hi: "नकली लोन ऐप 'प्रोसेसिंग फीस' और आपके कॉन्टैक्ट व फ़ोटो की अनुमति माँगते हैं, फिर धमकाते हैं।" },
+    real: { en: "Take loans only from your bank or RBI-registered lenders, and never pay a fee before the loan.", hi: "लोन सिर्फ़ अपने बैंक या RBI-रजिस्टर्ड संस्था से लें, और लोन से पहले कभी फीस न दें।" } },
+  { id: "task", role: "lure", w: 30, story: "task",
+    re: [/\b(like (youtube|instagram) videos|rate (hotels|products)|simple tasks|task\w*\b[^.\n]{0,20}commission|work online|daily salary|daily income|ghar baithe|roz kamao|roz kamaye)\b/gi,
+         /\bearn\b[^.\n]{0,25}\d[^.\n]{0,25}\b(day|daily|week)\b/gi, /\b(telegram|t\.me)\b/gi, /(घर बैठे|रोज़ कमाएं|रोज कमाएं|रोज़ाना कमाई|वीडियो लाइक)/g],
+    name: { en: "Easy money for simple 'tasks'", hi: "आसान 'टास्क' से कमाई" },
+    why: { en: "Task scams pay a little at first, then ask you to 'invest' to unlock bigger tasks. That money is never returned.", hi: "टास्क फ्रॉड में पहले थोड़ा पैसा देते हैं, फिर बड़े टास्क के लिए 'निवेश' माँगते हैं। वह पैसा कभी वापस नहीं आता।" },
+    real: { en: "Nobody pays thousands a day for liking videos.", hi: "वीडियो लाइक करने के लिए कोई रोज़ हज़ारों रुपये नहीं देता।" } },
+  { id: "joboffer", role: "lure", w: 25, story: "job_fee",
+    re: [/\b(selected for|you are selected|been selected|shortlisted|cleared the (initial )?screening|candidature|interview (is )?confirmed|qualified for the next stage|hiring freshers|is hiring|urgently recruiting|recruiting|part[- ]time (job|workers)|work from home (job|program)|(data entry|typing|online|part[- ]time) job|job offer|offered a)\b/gi, /(नौकरी के लिए चुने|पार्ट टाइम|शॉर्टलिस्ट)/g],
+    name: { en: "A job offer out of nowhere", hi: "अचानक आया नौकरी का ऑफ़र" },
+    why: { en: "Fake recruiters use big company names, then ask for a 'registration' or 'training kit' fee.", hi: "नकली भर्ती करने वाले बड़ी कंपनियों का नाम लेते हैं, फिर 'रजिस्ट्रेशन' या 'ट्रेनिंग किट' की फीस माँगते हैं।" },
+    real: { en: "Real employers never ask you to pay to work. Check the company's own careers page.", hi: "असली नौकरी देने वाला कभी पैसे नहीं माँगता। कंपनी की अपनी वेबसाइट पर नौकरियाँ देखें।" } },
+  { id: "takeover", role: "lure", w: 15, story: "takeover",
+    re: [/\b(whatsapp|instagram|facebook|google|netflix|telegram) account\b/gi, /\b\d[- ]digit code\b/gi],
+    name: { en: "About your WhatsApp or social media account", hi: "आपके WhatsApp या सोशल मीडिया अकाउंट के बारे में" },
+    why: { en: "With the code, the scammer takes over your account and messages your family asking for money.", hi: "कोड मिलने पर ठग आपका अकाउंट ले लेता है और आपके परिवार से पैसे माँगता है।" },
+    real: { en: "WhatsApp and Google never ask you to share a code.", hi: "WhatsApp और Google कभी कोड बताने को नहीं कहते।" } },
+  { id: "invest", role: "lure", w: 22, story: "invest",
+    re: [/\b(guaranteed (returns?|profit)|double your money|\d{2,3}% (returns?|profit)|stock tips|ipo allotment|trading group|crypto|bitcoin|paisa double)\b/gi, /(पैसा दोगुना|दोगुना मुनाफ़ा|गारंटीड (रिटर्न|मुनाफ़ा|मुनाफा)|पक्का मुनाफ़ा)/g],
+    name: { en: "Guaranteed returns or stock tips", hi: "पक्का मुनाफ़ा या शेयर टिप्स" },
+    why: { en: "No real investment is guaranteed. Fake trading groups show fake profits until you try to withdraw.", hi: "कोई भी असली निवेश गारंटी नहीं देता। नकली ट्रेडिंग ग्रुप तब तक नकली मुनाफ़ा दिखाते हैं जब तक आप पैसे निकालने की कोशिश न करें।" },
+    real: { en: "Use only SEBI-registered brokers and apps you installed from the Play Store or App Store.", hi: "सिर्फ़ SEBI-रजिस्टर्ड ब्रोकर और Play Store या App Store से लिए गए ऐप इस्तेमाल करें।" } },
+  { id: "refund", role: "lure", w: 20, story: "refund",
+    re: [/\b(income tax|it) refund\b/gi, /\brefund (of|approved|pending|amount)\b/gi, /\b(received|have) (a )?(rs\.?|₹)?\s?[\d,]*\s?refund\b/gi, /(आयकर रिफंड|टैक्स रिफंड|रिफंड (मंज़ूर|मंजूर|बाकी))/g],
+    name: { en: "A refund you were not expecting", hi: "ऐसा रिफंड जिसकी उम्मीद नहीं थी" },
+    why: { en: "Fake refund messages lead to pages that ask for your card, bank details or UPI PIN.", hi: "नकली रिफंड मैसेज ऐसे पेज पर ले जाते हैं जो कार्ड, बैंक की जानकारी या UPI PIN माँगते हैं।" },
+    real: { en: "Real refunds go straight to your bank account. You never apply through a link.", hi: "असली रिफंड सीधे बैंक खाते में आता है। किसी लिंक से आवेदन नहीं करना पड़ता।" } },
+  { id: "family", role: "lure", w: 25, story: "family",
+    re: [/\b(hi|hello) (mum|mom|ma|dad|papa|mummy)\b/gi, /\b(my new number|lost my phone|dropped my phone|my phone (is )?broken|mera naya number|phone kho gaya|phone gir gaya)\b/gi, /\b(can'?t|cannot) talk\b/gi, /(नया नंबर|फ़ोन खो गया|फोन खो गया|फ़ोन गिर गया|फोन गिर गया|फोन टूट गया)/g],
+    name: { en: "Family member with a 'new number'", hi: "'नए नंबर' वाला परिवार का सदस्य" },
+    why: { en: "Scammers pretend to be your child or relative on a new number so you cannot check by calling.", hi: "ठग आपका बच्चा या रिश्तेदार बनकर नए नंबर से लिखते हैं ताकि आप कॉल करके पता न कर सकें।" },
+    real: { en: "Call the old number, or ask a question only they would know.", hi: "पुराने नंबर पर कॉल करें, या ऐसा सवाल पूछें जिसका जवाब सिर्फ़ वही जानते हों।" } },
+
+  // ---- Style ----
+  { id: "disguise", role: "style", w: 25,
+    re: [/\b[a-z]+0[a-z]+\b|\b(0n|t0|n0)\b/gi, /\d[\d,]*O{2,}/g, /\d+O\d+/g, /\bO\d\b/g],
+    name: { en: "Letters swapped with numbers", hi: "अक्षरों की जगह अंक" },
+    why: { en: "Writing 'Y0ur B0nus' or 'Rs.15,OOO' with zeros and the letter O swapped is a trick to slip past spam filters.", hi: "'Y0ur B0nus' या 'Rs.15,OOO' जैसे शून्य और O की अदला-बदली स्पैम फ़िल्टर से बचने की चाल है।" },
+    real: { en: "Genuine banks and apps spell their messages normally.", hi: "असली बैंक और ऐप अपने मैसेज सही वर्तनी में लिखते हैं।" } },
+  { id: "urgent", role: "style", w: 12, tone: "mild",
+    re: [/\b(immediately|urgent(ly)?|within \d+ (hours?|hrs|minutes|mins)|in \d+ hours?|today( only)?|tonight|last (chance|date|day)|expir\w*|right now|claim now|act now|before (the )?deadline|turant|jaldi|aaj hi|aaj raat)\b/gi, /(तुरंत|फ़ौरन|फौरन|आज ही|आज रात|जल्दी|\d+ घंटे में)/g],
+    name: { en: "Rushes you", hi: "जल्दबाज़ी करवा रहा है" },
+    why: { en: "Hurry stops you from thinking or asking someone. Real organisations give you time.", hi: "जल्दबाज़ी में आप सोच नहीं पाते और किसी से पूछ नहीं पाते। असली संस्थाएँ समय देती हैं।" },
+    real: { en: "It is always fine to wait, hang up and check.", hi: "रुकना, फ़ोन काटना और जाँच करना हमेशा ठीक है।" } },
+  { id: "money", role: "style", w: 15, tone: "mild",
+    re: [/\b(pay|transfer|send|deposit)\b[^.\n]{0,25}(rs\.?|₹|inr|rupees|amount|money)/gi, /(रुपये|₹|पैसे)[^.।\n]{0,25}(भेजें|भेजिए|भेज दो|जमा करें|ट्रांसफर करें)/g],
+    name: { en: "Asks you to pay or transfer money", hi: "पैसे भेजने या ट्रांसफर करने को कह रहा है" },
+    why: { en: "A request for money is how most of these scams end.", hi: "पैसे की माँग ज़्यादातर फ्रॉड का आख़िरी कदम होती है।" },
+    real: { en: "Never pay to receive a prize, parcel, refund or job.", hi: "इनाम, पार्सल, रिफंड या नौकरी पाने के लिए कभी पैसे न भेजें।" } },
+  { id: "callme", role: "style", w: 12, tone: "mild",
+    re: [/\b(call|contact|whatsapp|message)\b[^.\n]{0,30}(\+?91[\s-]?)?[6-9][\dX]{9}\b/gi, /(\+?91[\s-]?)?[6-9]\d{9}\s*(पर)\s*(कॉल|संपर्क|फ़ोन|फोन|व्हाट्सएप)/g, /(कॉल|संपर्क)[^.।\n]{0,30}[6-9]\d{9}/g, /\bwa\.me\/\d+/gi],
+    name: { en: "Asks you to call or WhatsApp a mobile number", hi: "किसी मोबाइल नंबर पर कॉल या WhatsApp करने को कह रहा है" },
+    why: { en: "Banks and companies use toll-free or landline numbers. A personal 10-digit mobile is a warning sign.", hi: "बैंक और कंपनियाँ टोल-फ्री या लैंडलाइन नंबर इस्तेमाल करती हैं। निजी 10 अंकों का मोबाइल नंबर ख़तरे का संकेत है।" },
+    real: { en: "Find the official number on the back of your card or on the company's own website.", hi: "असली नंबर अपने कार्ड के पीछे या कंपनी की अपनी वेबसाइट पर देखें।" } },
+  { id: "brand", role: "style", w: 10, tone: "mild",
+    re: [/\b(sbi|yono|hdfc|icici|axis|kotak|pnb|punjab national bank|bank of baroda|canara|paytm|phonepe|google ?pay|gpay|bhim|npci|rbi|trai|uidai|income tax department|india ?post|amazon|flipkart)\b/gi, /(एसबीआई|स्टेट बैंक|फोनपे|पेटीएम|इंडिया पोस्ट|आयकर विभाग|रिज़र्व बैंक)/g],
+    name: { en: "Claims to be a bank, app or government office", hi: "बैंक, ऐप या सरकारी दफ़्तर होने का दावा" },
+    why: { en: "Scammers borrow well-known names to look trustworthy.", hi: "भरोसा जीतने के लिए ठग जाने-माने नाम इस्तेमाल करते हैं।" },
+    real: { en: "On its own this is normal. It matters when combined with other warning signs.", hi: "सिर्फ़ इतना होना आम बात है। यह तब मायने रखता है जब साथ में दूसरे ख़तरे के संकेत भी हों।" } },
+];
+
+const LINK_RULES = [
+  { key: "look", w: 30, story: "kyc",
+    name: { en: "Link pretends to be a bank or company", hi: "लिंक बैंक या कंपनी होने का नाटक करता है" },
+    why: { en: "The web address uses a famous name but is not the company's real site. This is how fake login pages work.", hi: "वेब पते में बड़ी कंपनी का नाम है, पर यह उसकी असली साइट नहीं है। नकली लॉगिन पेज ऐसे ही काम करते हैं।" },
+    real: { en: "Type the bank's address yourself, or use its official app.", hi: "बैंक का पता ख़ुद टाइप करें, या उसका असली ऐप खोलें।" } },
+  { key: "ip", w: 25,
+    name: { en: "Link is just numbers", hi: "लिंक सिर्फ़ अंकों का बना है" },
+    why: { en: "A web address made only of numbers is almost never a real company.", hi: "सिर्फ़ अंकों वाला वेब पता लगभग कभी किसी असली कंपनी का नहीं होता।" },
+    real: { en: "Do not open it.", hi: "इसे न खोलें।" } },
+  { key: "odd", w: 15,
+    name: { en: "Link to an unusual website", hi: "अनजान किस्म की वेबसाइट का लिंक" },
+    why: { en: "Endings like .xyz, .top or .click are cheap and popular with scammers.", hi: ".xyz, .top या .click जैसे पते सस्ते होते हैं और ठगों में लोकप्रिय हैं।" },
+    real: { en: "Indian banks use .co.in, .com, .bank.in or .sbi.", hi: "भारतीय बैंक .co.in, .com, .bank.in या .sbi इस्तेमाल करते हैं।" } },
+  { key: "short", w: 8, tone: "mild",
+    name: { en: "Shortened link hides where it goes", hi: "छोटा किया हुआ लिंक असली पता छिपाता है" },
+    why: { en: "Short links like bit.ly hide the real website. Adverts use them too, so this alone is not proof.", hi: "bit.ly जैसे छोटे लिंक असली वेबसाइट छिपा देते हैं। विज्ञापन भी इन्हें इस्तेमाल करते हैं, इसलिए सिर्फ़ इससे फ्रॉड साबित नहीं होता।" },
+    real: { en: "Open the company's app yourself instead of the link.", hi: "लिंक की जगह कंपनी का ऐप ख़ुद खोलें।" } },
+];
+
+const GOOD = {
+  otp: { name: { en: "Warns you not to share the OTP", hi: "OTP न बताने की चेतावनी देता है" },
+         why: { en: "Genuine OTP messages remind you never to share them, and carry no link or phone number.", hi: "असली OTP मैसेज याद दिलाते हैं कि OTP किसी को न बताएं, और उनमें कोई लिंक या फ़ोन नंबर नहीं होता।" } },
+  link: { name: { en: "Link goes to the company's real website", hi: "लिंक कंपनी की असली वेबसाइट का है" },
+          why: { en: "The address matches the official site. Still, opening the app directly is safest.", hi: "पता असली साइट से मेल खाता है। फिर भी, सीधे ऐप खोलना सबसे सुरक्षित है।" } },
+  promo: { name: { en: "Looks like a normal advert", hi: "सामान्य विज्ञापन जैसा लगता है" },
+           why: { en: "It has the usual advert signs (offers, T&C, discount codes, recharge plans) and does not ask for money, an OTP or your details.", hi: "इसमें विज्ञापन वाली आम बातें हैं (ऑफ़र, T&C, डिस्काउंट कोड, रिचार्ज प्लान) और यह पैसे, OTP या आपकी जानकारी नहीं माँगता।" } },
+  warning: { name: { en: "This is a safety warning", hi: "यह एक सुरक्षा चेतावनी है" },
+             why: { en: "It warns you about scams instead of asking you to do anything risky.", hi: "यह कुछ जोखिम भरा करने को नहीं कहता, बल्कि फ्रॉड से सावधान करता है।" } },
+};
+
+const SHORTENERS = /^(bit\.ly|tinyurl\.com|cutt\.ly|is\.gd|t\.ly|rb\.gy|shorturl\.at|tiny\.cc|ow\.ly|s\.id|rebrand\.ly|v\.gd|qr\.ae|t\.co|1kx\.in|gmg\.im|sr3\.in|oi1\.in)$/i;
+const ODD_TLD = /\.(xyz|top|click|info|live|icu|shop|online|site|buzz|cyou|monster|rest|sbs|cfd|vip|win|link|support|help)$/i;
+const OFFICIAL = /(^|\.)(sbi\.co\.in|onlinesbi\.sbi|hdfcbank\.com|icicibank\.com|axisbank\.com|kotak\.com|pnbindia\.in|paytm\.com|phonepe\.com|amazon\.in|amazon\.com|flipkart\.com|indiapost\.gov\.in|incometax\.gov\.in|uidai\.gov\.in|gov\.in|nic\.in|npci\.org\.in|rbi\.org\.in|airtel\.in|myvi\.in|jio\.com|fkrt\.it|goo\.gl)$/i;
+const BRAND_WORDS = /(sbi|yono|hdfc|icici|axis|kotak|paytm|phonepe|gpay|npci|rbi|uidai|aadhaar|aadhr|incometax|indiapost|kyc|amazon|flipkart|bank)/i;
+const LINK_RE = /\b(?:https?:\/\/|www\.)[^\s<>"]+|\b[a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+)*\.(?:com|in|net|org|co|ly|gd|me|xyz|top|click|info|live|icu|shop|online|site|link|at|cc|ae|sbi|io|im|it|to)\b(?:\/[^\s<>"]*)?/gi;
+const SAFE_OTP = /\b(do not|don'?t|never) share\b|share na kar|(शेयर|साझा) न करें|किसी को न बताएं|किसी के साथ (शेयर|साझा) न/i;
+const PROMO = /%\s?off\b|\bt\s?&\s?c|\btnc\b|\buse code\b|\bmrp\b|\bsale\b|\brecharge (with|of|now|for)\b|\/kg\b|\bgb\/d(ay)?\b|unlimited calls|\bott\b|subscription|\boffer\b|\bdeals?\b|\bshop now\b|\bapply now\b|\bbuy\s?\d\b|\bb\dg\d\b|\bmovies?\b|\bstreaming\b|\bwatch\b|\bdata pack\b|\bplan\b|\brummy\b|\bplay\b/i;
+const WARNING = /\bbeware of\b|\bnever (asks?|sends?|calls?|makes?)\b|\bdo not (respond|click|download)\b|\bdon'?t (respond|click|download)\b|\badvises you\b|\breport (suspected )?fraud\b|\bfake (calls|messages|links|jobs)\b|\bverify the credentials\b|\bbe (alert|cautious)\b|सावधान रहें|झांसे में न आएं/i;
+const MESSAGING = /\b(telegram|t\.me|whatsapp|wa\.me)\b/i;
+const STORY_PRIORITY = ["arrest", "pin", "remote", "power", "family", "task", "job_fee", "wallet", "loan", "prize", "card", "takeover", "debit", "otp", "kyc", "parcel", "invest", "refund", "generic"];
+
+function hostOf(u) {
+  const s = u.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
+  return s.split(/[\/?#:]/)[0].toLowerCase().replace(/[.,)!]+$/, "");
+}
+
+function analyze(text) {
+  const hits = [];
+  for (const r of RULES) {
+    const m = [];
+    for (const re of r.re) {
+      re.lastIndex = 0;
+      let x;
+      while ((x = re.exec(text))) { m.push({ s: x.index, e: x.index + x[0].length }); if (!x[0].length) re.lastIndex++; }
+    }
+    if (m.length) hits.push({ rule: r, matches: m });
+  }
+
+  // Links get their own judgement.
+  const linkFlags = { look: [], ip: [], odd: [], short: [] };
+  let officialLink = false, otherLink = false;
+  LINK_RE.lastIndex = 0;
+  let lm;
+  while ((lm = LINK_RE.exec(text))) {
+    const host = hostOf(lm[0]);
+    if (!host.includes(".")) continue;
+    const span = { s: lm.index, e: lm.index + lm[0].length };
+    if (/^\d+\.\d+\.\d+\.\d+$/.test(host)) linkFlags.ip.push(span);
+    else if (SHORTENERS.test(host)) linkFlags.short.push(span);
+    else if (OFFICIAL.test(host)) officialLink = true;
+    else if (BRAND_WORDS.test(host)) linkFlags.look.push(span);
+    else if (ODD_TLD.test(host)) linkFlags.odd.push(span);
+    else otherLink = true;
+  }
+  for (const lr of LINK_RULES) if (linkFlags[lr.key].length) hits.push({ rule: { ...lr, id: "link-" + lr.key, role: "style" }, matches: linkFlags[lr.key] });
+
+  const has = id => hits.some(h => h.rule.id === id || h.rule.id.startsWith(id));
+  const anyRole = role => hits.some(h => h.rule.role === role);
+  const ask = anyRole("ask"), lure = anyRole("lure");
+  const reach = has("link-") || otherLink || has("callme") || /\bclick (here|the link|on the link|link)\b|\bvia this (secure )?link\b|\bthis link\b/i.test(text);
+
+  let score = hits.reduce((a, h) => a + h.rule.w, 0);
+  // Combinations are more telling than any single sign: a lure plus an ask is the shape of a scam.
+  if (lure && ask) score += 15;
+  if (lure && reach) score += 10;
+  if (ask && reach) score += 8;
+  if (has("brand") && has("threat")) score += 8;
+  if (has("urgent") && (lure || ask)) score += 6;
+  if (has("task") && MESSAGING.test(text)) score += 12;
+  if (has("family") && (has("urgent") || /\b(pay|money|transfer|send|bill)\b|पैसे|बिल/i.test(text))) score += 12;
+  if (has("brand") && !lure && !ask && !has("urgent") && !has("callme")) score -= 10; // a brand alone is normal
+
+  const good = [];
+  if (!ask) {
+    if (WARNING.test(text)) { score -= 25; good.push(GOOD.warning); }
+    else if (PROMO.test(text)) { score -= 15; good.push(GOOD.promo); }
+    if (SAFE_OTP.test(text) && !has("link-") && !has("callme")) { score -= 15; good.push(GOOD.otp); }
+  }
+  if (officialLink && !has("link-")) good.push(GOOD.link);
+
+  score = Math.max(0, score);
+  const p = score === 0 ? 4 : Math.round(Math.min(97, Math.max(3, 100 * (1 - Math.exp(-score / 45)))));
+
+  const stories = new Set(hits.map(h => h.rule.story).filter(Boolean));
+  const story = STORY_PRIORITY.find(s => stories.has(s)) || "generic";
+
+  // Strongest signal first, so the comic can quote it.
+  hits.sort((a, b) => b.rule.w - a.rule.w);
+  const spans = [];
+  for (const [i, h] of hits.entries()) for (const m of h.matches) spans.push({ ...m, n: i + 1 });
+  return { p, hits, good, spans, story };
+}
+
+// ---------- Comic: drawn scenes ----------
+const C = { ink: "#1f2430", skin: "#e0a67a", skin2: "#c68a5e", hair: "#d9d9d9", sari: "#d9480f", gold: "#f2b705", hood: "#3b3f4a", red: "#e03131", green: "#2f9e44", blue: "#1971c2", screen: "#f8f9fa", body: "#2b2f3a" };
+
+function dadi(x, y, mood = "worried", s = 1) {
+  const mouth = mood === "happy" ? `<path d="M-5,7 Q0,12 5,7" stroke="${C.ink}" stroke-width="2" fill="none" stroke-linecap="round"/>`
+    : mood === "shocked" ? `<ellipse cx="0" cy="9" rx="2.6" ry="3.2" fill="${C.ink}"/>`
+    : `<path d="M-5,10 Q0,6 5,10" stroke="${C.ink}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  const tear = mood === "sad" ? `<path d="M9,2 Q11,7 9,9 Q7,7 9,2Z" fill="${C.blue}"/>` : "";
+  return `<g transform="translate(${x},${y}) scale(${s})">
+    <path d="M-24,62 Q-26,20 0,18 Q26,20 24,62 Z" fill="${C.sari}" stroke="${C.ink}" stroke-width="2"/>
+    <path d="M-12,21 L16,60" stroke="${C.gold}" stroke-width="5"/>
+    <circle cx="0" cy="-20" r="7" fill="${C.hair}" stroke="${C.ink}" stroke-width="2"/>
+    <circle cx="0" cy="0" r="16" fill="${C.skin}" stroke="${C.ink}" stroke-width="2"/>
+    <path d="M-16,-1 Q-16,-17 0,-17 Q16,-17 16,-1 Q11,-9 0,-9 Q-11,-9 -16,-1Z" fill="${C.hair}" stroke="${C.ink}" stroke-width="1.5"/>
+    <circle cx="-6" cy="1" r="4.5" fill="none" stroke="${C.ink}" stroke-width="1.6"/><circle cx="6" cy="1" r="4.5" fill="none" stroke="${C.ink}" stroke-width="1.6"/>
+    <line x1="-1.5" y1="1" x2="1.5" y2="1" stroke="${C.ink}" stroke-width="1.6"/>
+    <circle cx="-6" cy="1.5" r="1.3" fill="${C.ink}"/><circle cx="6" cy="1.5" r="1.3" fill="${C.ink}"/>
+    <circle cx="0" cy="-6" r="1.6" fill="${C.red}"/>${mouth}${tear}</g>`;
+}
+function dadaji(x, y, mood = "worried", s = 1) {
+  const mouth = mood === "happy" ? `<path d="M-5,11 Q0,15 5,11" stroke="${C.ink}" stroke-width="2" fill="none" stroke-linecap="round"/>`
+    : mood === "shocked" ? `<ellipse cx="0" cy="12" rx="2.6" ry="3" fill="${C.ink}"/>`
+    : `<path d="M-5,13 Q0,9 5,13" stroke="${C.ink}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  const tear = mood === "sad" ? `<path d="M9,2 Q11,7 9,9 Q7,7 9,2Z" fill="${C.blue}"/>` : "";
+  return `<g transform="translate(${x},${y}) scale(${s})">
+    <path d="M-24,62 Q-26,20 0,18 Q26,20 24,62 Z" fill="#f1f3f5" stroke="${C.ink}" stroke-width="2"/>
+    <path d="M0,20 V44" stroke="#adb5bd" stroke-width="2"/><circle cx="0" cy="28" r="1.6" fill="#868e96"/><circle cx="0" cy="36" r="1.6" fill="#868e96"/>
+    <circle cx="0" cy="0" r="16" fill="${C.skin}" stroke="${C.ink}" stroke-width="2"/>
+    <ellipse cx="-14" cy="-3" rx="5" ry="7" fill="${C.hair}" stroke="${C.ink}" stroke-width="1.2"/><ellipse cx="14" cy="-3" rx="5" ry="7" fill="${C.hair}" stroke="${C.ink}" stroke-width="1.2"/>
+    <circle cx="-6" cy="0" r="4.5" fill="none" stroke="${C.ink}" stroke-width="1.6"/><circle cx="6" cy="0" r="4.5" fill="none" stroke="${C.ink}" stroke-width="1.6"/>
+    <line x1="-1.5" y1="0" x2="1.5" y2="0" stroke="${C.ink}" stroke-width="1.6"/>
+    <circle cx="-6" cy="0.5" r="1.3" fill="${C.ink}"/><circle cx="6" cy="0.5" r="1.3" fill="${C.ink}"/>
+    <path d="M-9,7 Q-4,4 0,7 Q4,4 9,7 Q4,10 0,8 Q-4,10 -9,7Z" fill="#e9ecef" stroke="${C.ink}" stroke-width="1"/>${mouth}${tear}</g>`;
+}
+let ELDER = "dadi";
+const elder = (...a) => ELDER === "dadaji" ? dadaji(...a) : dadi(...a);
+function scammer(x, y, cap = false, s = 1) {
+  const hat = cap ? `<path d="M-15,-8 Q0,-24 15,-8 Z" fill="#1c3d7a" stroke="${C.ink}" stroke-width="2"/><rect x="-17" y="-9" width="34" height="5" rx="2" fill="#16305f"/><circle cx="0" cy="-14" r="3" fill="${C.gold}"/>`
+    : `<path d="M-19,4 Q-20,-22 0,-22 Q20,-22 19,4 Q12,-14 0,-14 Q-12,-14 -19,4Z" fill="${C.hood}" stroke="${C.ink}" stroke-width="2"/>`;
+  return `<g transform="translate(${x},${y}) scale(${s})">
+    <path d="M-24,62 Q-24,18 0,16 Q24,18 24,62 Z" fill="${cap ? "#1c3d7a" : C.hood}" stroke="${C.ink}" stroke-width="2"/>
+    <circle cx="0" cy="0" r="15" fill="${C.skin2}" stroke="${C.ink}" stroke-width="2"/>${hat}
+    <path d="M-8,0 L-3,1" stroke="${C.ink}" stroke-width="2" stroke-linecap="round"/><path d="M3,1 L8,0" stroke="${C.ink}" stroke-width="2" stroke-linecap="round"/>
+    <path d="M-5,7 Q2,11 7,5" stroke="${C.ink}" stroke-width="2" fill="none" stroke-linecap="round"/></g>`;
+}
+function grandson(x, y, s = 1) {
+  return `<g transform="translate(${x},${y}) scale(${s})">
+    <path d="M-24,62 Q-24,18 0,16 Q24,18 24,62 Z" fill="${C.blue}" stroke="${C.ink}" stroke-width="2"/>
+    <circle cx="0" cy="0" r="15" fill="${C.skin}" stroke="${C.ink}" stroke-width="2"/>
+    <path d="M-15,-2 Q-14,-18 2,-17 Q15,-16 15,-3 Q8,-11 -2,-9 Q-10,-8 -15,-2Z" fill="#2b2b2b"/>
+    <circle cx="-5" cy="1" r="1.6" fill="${C.ink}"/><circle cx="5" cy="1" r="1.6" fill="${C.ink}"/>
+    <path d="M-5,8 Q0,6 5,8" stroke="${C.ink}" stroke-width="2" fill="none" stroke-linecap="round"/></g>`;
+}
+function phone(x, y, w, h, inner) {
+  return `<g transform="translate(${x},${y})"><rect width="${w}" height="${h}" rx="8" fill="${C.body}" stroke="${C.ink}" stroke-width="2"/>
+    <rect x="5" y="9" width="${w - 10}" height="${h - 18}" rx="3" fill="${C.screen}"/><g transform="translate(5,9)">${inner}</g></g>`;
+}
+const T_ = (x, y, t, size = 14, fill = C.ink, weight = 800) => `<text x="${x}" y="${y}" font-family="Bricolage Grotesque, Arial, sans-serif" font-size="${size}" font-weight="${weight}" fill="${fill}" text-anchor="middle">${t}</text>`;
+const note = (x, y, r) => `<g transform="translate(${x},${y}) rotate(${r})"><rect x="-13" y="-8" width="26" height="16" rx="2" fill="#8ce99a" stroke="${C.ink}" stroke-width="1.5"/>${T_(0, 4.5, "₹", 11, C.ink)}</g>`;
+
+const SCENES = {
+  msg: bg => [bg, elder(70, 72, "worried"), phone(130, 18, 76, 116,
+    `<rect x="6" y="10" width="54" height="40" rx="8" fill="#ffe3e3" stroke="${C.red}" stroke-width="1.5"/>
+     <path d="M33,16 L45,38 H21 Z" fill="${C.red}"/>${T_(33, 35, "!", 13, "#fff")}
+     <rect x="8" y="58" width="50" height="5" rx="2" fill="#ced4da"/><rect x="8" y="68" width="38" height="5" rx="2" fill="#ced4da"/>
+     <rect x="8" y="78" width="44" height="5" rx="2" fill="${C.blue}"/>`)],
+  form: bg => [bg, elder(55, 72, "worried"), phone(118, 14, 84, 122,
+    `<rect width="74" height="18" fill="#3b5bdb"/>${T_(37, 13, "BANK", 10, "#fff")}
+     <rect x="8" y="28" width="58" height="12" rx="2" fill="#fff" stroke="#adb5bd"/><rect x="8" y="46" width="58" height="12" rx="2" fill="#fff" stroke="#adb5bd"/>
+     <text x="12" y="56" font-size="10" fill="${C.ink}">• • • • • •</text>
+     <rect x="8" y="66" width="58" height="14" rx="3" fill="#3b5bdb"/>`),
+    `<path d="M215,0 V30 Q215,44 203,44 Q193,44 193,34" stroke="${C.ink}" stroke-width="3" fill="none"/><path d="M193,34 L188,40 M193,34 L199,39" stroke="${C.ink}" stroke-width="3"/>`],
+  otp: bg => [bg, phone(26, 16, 76, 116,
+    `${T_(33, 30, "OTP", 15)}<rect x="6" y="40" width="54" height="22" rx="4" fill="#fff3bf" stroke="${C.gold}"/>${T_(33, 56, "4 8 2 9", 13, C.ink, 700)}`),
+    `<path d="M112,74 H158" stroke="${C.red}" stroke-width="5" stroke-dasharray="7 5"/><path d="M156,64 L170,74 L156,84 Z" fill="${C.red}"/>`, scammer(198, 72)],
+  money: bg => [bg, phone(22, 16, 76, 116, `${T_(33, 30, "BALANCE", 9, "#868e96", 700)}${T_(33, 58, "₹0", 26, C.red)}`),
+    note(122, 40, -15), note(148, 70, 12), note(124, 100, 25), note(170, 36, 8), scammer(205, 74)],
+  paid: bg => [bg, elder(58, 72, "happy"), phone(122, 16, 80, 116, `${T_(35, 36, "+₹150", 18, C.green)}<path d="M35,48 V76 M24,66 L35,78 L46,66" stroke="${C.green}" stroke-width="4" fill="none"/>`)],
+  call: bg => [bg, elder(55, 72, "worried"), `<rect x="70" y="56" width="11" height="20" rx="3" fill="${C.body}"/>`,
+    `<path d="M90,52 L104,44 L114,56 L128,46 L140,58 L152,48" stroke="${C.red}" stroke-width="3" fill="none"/>`,
+    scammer(190, 72), `<rect x="167" y="56" width="11" height="20" rx="3" fill="${C.body}"/>`],
+  pin: bg => [bg, elder(52, 72, "worried"), phone(118, 12, 84, 126,
+    `${T_(37, 18, "UPI PIN", 11)}${[0, 1, 2].map(r => [0, 1, 2].map(c => `<circle cx="${17 + c * 20}" cy="${36 + r * 22}" r="8" fill="#e9ecef" stroke="#adb5bd"/>`).join("")).join("")}
+     <rect x="9" y="96" width="56" height="10" rx="3" fill="${C.red}"/>`)],
+  police: bg => [bg, elder(48, 74, "shocked"),
+    `<rect x="100" y="12" width="128" height="88" rx="6" fill="#343a40" stroke="${C.ink}" stroke-width="2"/><rect x="106" y="18" width="116" height="76" fill="#dee2e6"/>
+     <circle cx="216" cy="26" r="4" fill="${C.red}"/><rect x="150" y="100" width="28" height="10" fill="#495057"/><rect x="136" y="110" width="56" height="5" rx="2" fill="#495057"/>`,
+    `<svg x="106" y="18" width="116" height="76" viewBox="0 0 116 76" overflow="hidden">${scammer(58, 30, true, 0.95)}</svg>`],
+  app: bg => [bg, phone(78, 16, 80, 118, `${T_(35, 22, "APK", 12)}<path d="M35,32 V60 M23,49 L35,62 L47,49" stroke="${C.blue}" stroke-width="5" fill="none"/><rect x="18" y="68" width="34" height="5" fill="${C.blue}"/>`),
+    `<g transform="translate(196,48)"><ellipse rx="26" ry="15" fill="#fff" stroke="${C.ink}" stroke-width="2.5"/><circle r="9" fill="${C.red}"/><circle r="4" fill="${C.ink}"/></g>`,
+    `<path d="M170,62 L160,76" stroke="${C.red}" stroke-width="3" stroke-dasharray="4 4"/>`],
+  gift: bg => [bg, elder(55, 72, "happy"),
+    `<g transform="translate(150,52)"><rect x="-32" y="0" width="64" height="48" fill="${C.gold}" stroke="${C.ink}" stroke-width="2"/><rect x="-36" y="-12" width="72" height="14" fill="${C.gold}" stroke="${C.ink}" stroke-width="2"/>
+     <rect x="-6" y="-12" width="12" height="60" fill="${C.red}"/><path d="M0,-12 Q-22,-34 -18,-14 M0,-12 Q22,-34 18,-14" stroke="${C.red}" stroke-width="5" fill="none"/></g>`,
+    T_(206, 40, "₹", 22, C.green), T_(100, 30, "₹", 18, C.green), T_(212, 100, "₹", 16, C.green)],
+  gone: bg => [bg, elder(58, 72, "sad"), phone(124, 16, 76, 116, `<path d="M18,30 L48,62 M48,30 L18,62" stroke="${C.red}" stroke-width="6" stroke-linecap="round"/><rect x="10" y="76" width="46" height="5" rx="2" fill="#ced4da"/>`)],
+  family: bg => [bg, elder(60, 72, "shocked"), grandson(182, 72), `<rect x="200" y="56" width="11" height="20" rx="3" fill="${C.body}"/>`, T_(122, 52, "?", 34, C.blue)],
+  safe: bg => [bg, elder(70, 72, "happy"),
+    `<g transform="translate(168,30)"><path d="M0,0 L34,10 V40 C34,62 18,74 0,80 C-18,74 -34,62 -34,40 V10 Z" fill="${C.green}" stroke="${C.ink}" stroke-width="2.5"/>
+     <path d="M-14,40 L-3,51 L17,28" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`],
+};
+const SCENE_BG = { msg: "#dbe9ff", form: "#ffe3e3", otp: "#fff3bf", money: "#ffe3e3", paid: "#d3f9d8", call: "#e7f5ff", pin: "#fff3bf", police: "#e9ecef", app: "#f3d9fa", gift: "#fff3bf", gone: "#e9ecef", family: "#e7f5ff", safe: "#d3f9d8" };
+
+function sceneSvg(id) {
+  if (!SCENES[id]) id = "msg";
+  const bg = `<rect width="240" height="150" fill="${SCENE_BG[id]}"/>`;
+  return `<svg viewBox="0 0 240 150" role="img" aria-hidden="true">${SCENES[id](bg).join("")}</svg>`;
+}
+
+// ---------- Comic: details pulled from the message ----------
+// Stories are templates. {first} {fee} {big} are amounts from the message, {brand} the company it names,
+// {when} its deadline. Each story has defaults for messages that do not mention them.
+const BRANDS = [
+  [/\b(sbi|state bank|yono)\b|एसबीआई|स्टेट बैंक/i, "SBI"], [/\bhdfc\b/i, "HDFC"], [/\bicici\b/i, "ICICI"], [/\baxis\b/i, "Axis Bank"],
+  [/\bkotak\b/i, "Kotak"], [/\b(pnb|punjab national)\b/i, "PNB"], [/\bbank of baroda\b/i, "Bank of Baroda"], [/\bpaytm\b|पेटीएम/i, "Paytm"],
+  [/\bphonepe\b|फोनपे/i, "PhonePe"], [/\b(google ?pay|gpay)\b/i, "Google Pay"], [/\bbhim\b/i, "BHIM UPI"], [/\bamazon\b/i, "Amazon"],
+  [/\bflipkart\b/i, "Flipkart"], [/\bindia ?post\b|इंडिया पोस्ट/i, "India Post"], [/\bwhatsapp\b/i, "WhatsApp"], [/\binstagram\b/i, "Instagram"],
+  [/\bnetflix\b/i, "Netflix"], [/\bgoogle\b/i, "Google"], [/\binfosys\b/i, "Infosys"], [/\btcs\b/i, "TCS"], [/\bwipro\b/i, "Wipro"],
+  [/\bhcl\b/i, "HCL"], [/\btata\b/i, "Tata"], [/\breliance\b/i, "Reliance"], [/\bairtel\b/i, "Airtel"], [/\bjio\b/i, "Jio"],
+  [/\b(vodafone|vi)\b/i, "Vi"], [/\bkbc\b/i, "KBC"], [/\buidai\b|\baadhaar\b|आधार/i, "Aadhaar"],
+];
+const AGENCIES = [[/\bcbi\b|सीबीआई/i, "CBI"], [/\bcustoms\b|कस्टम/i, { en: "Customs", hi: "कस्टम" }], [/\bcyber ?crime\b/i, { en: "Cyber Crime", hi: "साइबर क्राइम" }], [/\bpolice\b|पुलिस/i, { en: "Police", hi: "पुलिस" }]];
+const UNIT_HI = { lakh: "लाख", lakhs: "लाख", crore: "करोड़", thousand: "हज़ार", "लाख": "लाख", "करोड़": "करोड़" };
+
+function details(text) {
+  // Undo "Rs.15,OOO" style disguises before reading amounts.
+  const t = text.replace(/\b[\dO][\dO,]*\b/g, m => /\d/.test(m) ? m.replace(/O/g, "0") : m);
+  const amounts = [];
+  const re = /(?:rs\.?|₹|inr)\s?(\d[\d,]*(?:\.\d+)?)(?:\s*(lakhs?|crore|thousand))?|(\d[\d,.]*)\s*(lakhs?|crore|thousand|लाख|करोड़)|(\d[\d,]*)\s*(?:रुपये|रुपए)/gi;
+  let m;
+  while ((m = re.exec(t))) {
+    let digits = (m[1] || m[3] || m[5]).replace(/[,.]+$/, "");
+    const unit = (m[2] || m[4] || "").toLowerCase();
+    if (!digits.includes(",") && /^\d{5,}$/.test(digits)) digits = digits.replace(/(\d)(?=(\d\d)+\d$)/g, "$1,");
+    const mult = /lakh|लाख/.test(unit) ? 1e5 : /crore|करोड़/.test(unit) ? 1e7 : /thousand/.test(unit) ? 1e3 : 1;
+    const value = parseFloat(digits.replace(/,/g, "")) * mult;
+    if (!value) continue;
+    const before = t.slice(Math.max(0, m.index - 30), m.index);
+    amounts.push({
+      value, index: m.index,
+      isFee: /\b(pay|paying|deposit|transfer|fee|charges?|registration|kit)\b|फीस|शुल्क|भरें/i.test(before) && !/\b(won|win|prize|salary|credited|debited|earn)\b[^,.;]*$/i.test(before),
+      label: { en: "₹" + digits + (unit ? " " + unit : ""), hi: "₹" + digits + (unit ? " " + (UNIT_HI[unit] || unit) : "") },
+    });
+  }
+  const fee = amounts.find(a => a.isFee);
+  const rest = amounts.filter(a => a !== fee);
+  const big = rest.reduce((a, b) => (!a || b.value > a.value ? b : a), null);
+  const brandHit = BRANDS.find(([r]) => r.test(text));
+  const agencyHit = AGENCIES.find(([r]) => r.test(text));
+  const w = text.match(/\b(within \d+ (?:hours?|hrs|minutes|mins)|in \d+ hours?|tonight|today|tomorrow)\b|आज रात|आज|कल|\d+ घंटे में/i);
+  let when = null;
+  if (w) {
+    const x = w[0].toLowerCase(), n = (x.match(/\d+/) || [""])[0];
+    when = /[ऀ-ॿ]/.test(x) ? { en: x, hi: x }
+      : x === "tonight" ? { en: "tonight", hi: "आज रात" } : x === "today" ? { en: "today", hi: "आज" } : x === "tomorrow" ? { en: "tomorrow", hi: "कल" }
+      : /min/.test(x) ? { en: x, hi: n + " मिनट में" } : { en: x, hi: n + " घंटे में" };
+  }
+  return {
+    first: rest[0]?.label, fee: fee?.label, big: big?.label, when,
+    brand: brandHit && { en: brandHit[1], hi: brandHit[1] },
+    agency: agencyHit && (typeof agencyHit[1] === "string" ? { en: agencyHit[1], hi: agencyHit[1] } : agencyHit[1]),
+  };
+}
+
+// Dadi or Dadaji, picked from the message itself so the same message always gets the same comic.
+function pickElder(text) {
+  let h = 0;
+  for (const c of text) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return h % 2 ? "dadaji" : "dadi";
+}
+const ELDERS = {
+  dadi:   { en: { N: "Dadi", She: "She", she: "she", her: "her", mum: "Mum" }, hi: { N: "दादी", "ती": "ती", "थीं": "थीं", "दोगी": "दोगी", mum: "मम्मी" } },
+  dadaji: { en: { N: "Dadaji", She: "He", she: "he", her: "his", mum: "Dad" }, hi: { N: "दादाजी", "ती": "ते", "थीं": "थे", "दोगी": "दोगे", mum: "पापा" } },
+};
+
+// ---------- Comic: stories ----------
+// Each panel: [scene, English, Hindi]. The last panel is the safe ending.
+const STORIES = {
+  kyc: { def: { brand: { en: "bank", hi: "बैंक" }, when: { en: "today", hi: "आज" } }, panels: [
+    ["msg", "A message: '{brand} account will be blocked {when}. Update your KYC.'", "मैसेज: '{brand} खाता {when} बंद हो जाएगा। KYC अपडेट करें।'"],
+    ["form", "{N} taps the link. It looks exactly like {brand}. {She} types {her} login.", "{N} लिंक दबा{ती} हैं। पेज बिल्कुल {brand} जैसा दिखता है। वे अपना लॉगिन डाल दे{ती} हैं।"],
+    ["otp", "Next it asks for the OTP that just arrived. {She} types that too.", "फिर वह अभी आया OTP माँगता है। {N} वह भी डाल दे{ती} हैं।"],
+    ["money", "In 3 minutes, ₹48,000 is gone to accounts no one can trace.", "3 मिनट में ₹48,000 ऐसे खातों में चले जाते हैं जिनका पता नहीं चलता।"],
+    ["safe", "Instead: {N} ignored the link and opened the real {brand} app. Nothing was wrong.", "सही तरीका: {N} ने लिंक नहीं खोला और {brand} का असली ऐप खोला। सब ठीक था।"]] },
+  parcel: { def: { brand: { en: "Courier", hi: "कूरियर" }, fee: { en: "₹49", hi: "₹49" }, when: { en: "today", hi: "आज" } }, panels: [
+    ["msg", "'{brand}: your parcel is on hold. Pay {fee} {when} or it goes back.'", "'{brand}: आपका पार्सल रुका है। {when} {fee} भरें, वरना वापस चला जाएगा।'"],
+    ["form", "Only {fee}, {N} thinks. {She} enters {her} card details on the page.", "सिर्फ़ {fee}, {N} सोच{ती} हैं। वे पेज पर कार्ड की जानकारी डाल दे{ती} हैं।"],
+    ["otp", "An OTP arrives. {She} thinks it is for {fee} and types it.", "एक OTP आता है। {N} को लगता है यह {fee} का है, और वे डाल दे{ती} हैं।"],
+    ["money", "The card is charged ₹19,999. Then again.", "कार्ड से ₹19,999 कट जाते हैं। फिर दोबारा।"],
+    ["safe", "Instead: {N} checked {her} orders in the shopping app. No parcel was stuck.", "सही तरीका: {N} ने शॉपिंग ऐप में अपने ऑर्डर देखे। कोई पार्सल नहीं रुका था।"]] },
+  pin: { def: { brand: { en: "UPI", hi: "UPI" }, first: { en: "₹4,999", hi: "₹4,999" } }, panels: [
+    ["msg", "'{brand}: you have received {first}! Enter your PIN to get it.'", "'{brand}: आपको {first} मिले हैं! पाने के लिए PIN डालें।'"],
+    ["pin", "It sounds like good news. {N} enters {her} UPI PIN.", "अच्छी ख़बर लगती है। {N} अपना UPI PIN डाल दे{ती} हैं।"],
+    ["money", "{first} leaves {her} account. It was a payment request, not money coming in.", "खाते से {first} चले जाते हैं। यह पैसे आने का नहीं, माँगने का रिक्वेस्ट था।"],
+    ["call", "'Oops, a mistake! Enter the PIN again to fix it.' More money goes.", "'अरे, गलती हो गई! ठीक करने के लिए फिर PIN डालिए।' और पैसे चले जाते हैं।"],
+    ["safe", "Instead: {N} remembered: a PIN is only for paying, never for receiving.", "सही तरीका: {N} को याद था: PIN सिर्फ़ पैसे भेजने के लिए है, पाने के लिए कभी नहीं।"]] },
+  arrest: { def: { agency: { en: "CBI", hi: "CBI" }, first: { en: "₹2.5 lakh", hi: "₹2.5 लाख" } }, panels: [
+    ["police", "A video call from '{agency}'. Uniform, badge, office. 'A drugs parcel in your name.'", "'{agency}' का वीडियो कॉल। वर्दी, बैज, दफ़्तर। 'आपके नाम का ड्रग्स वाला पार्सल पकड़ा गया है।'"],
+    ["police", "'You are under digital arrest. Do not tell your family.' Hours go by.", "'आप डिजिटल अरेस्ट में हैं। परिवार को मत बताना।' घंटों बीत जाते हैं।"],
+    ["money", "'Transfer your savings for checking. It will be returned.' {N} sends {first}.", "'जाँच के लिए अपनी बचत ट्रांसफर करें, वापस मिल जाएगी।' {N} {first} भेज दे{ती} हैं।"],
+    ["gone", "The call ends. The number is switched off. The money never returns.", "कॉल कट जाता है। नंबर बंद हो जाता है। पैसा कभी वापस नहीं आता।"],
+    ["safe", "Instead: {N} hung up and called family. Real police never arrest anyone on a video call.", "सही तरीका: {N} ने फ़ोन काटकर परिवार को कॉल किया। असली पुलिस वीडियो कॉल पर गिरफ़्तार नहीं करती।"]] },
+  power: { def: { when: { en: "tonight", hi: "आज रात" } }, panels: [
+    ["msg", "'Your electricity will be cut {when}. Call the officer now.'", "'{when} आपकी बिजली कट जाएगी। अभी अफ़सर को कॉल करें।'"],
+    ["call", "The 'officer' says: pay ₹10 with this app to update the bill.", "'अफ़सर' कहता है: बिल अपडेट करने के लिए इस ऐप से ₹10 भरें।"],
+    ["app", "The app shares {her} screen. He watches {N} open the bank app.", "वह ऐप {N} की स्क्रीन शेयर करता है। ठग उन्हें बैंक ऐप खोलते हुए देखता है।"],
+    ["money", "₹10 is paid. Then ₹85,000 more, without {N} touching anything.", "₹10 भरे जाते हैं। फिर बिना कुछ किए ₹85,000 और निकल जाते हैं।"],
+    ["safe", "Instead: {N} checked the bill on the electricity board's own website. It was already paid.", "सही तरीका: {N} ने बिजली विभाग की असली वेबसाइट पर बिल देखा। बिल पहले ही भरा था।"]] },
+  task: { def: { first: { en: "₹3,000", hi: "₹3,000" } }, panels: [
+    ["gift", "'Easy work from home: earn {first} a day!'", "'घर बैठे आसान काम: रोज़ {first} कमाएं!'"],
+    ["paid", "{N} finishes 3 small tasks and really gets ₹150. It seems real!", "{N} 3 छोटे टास्क कर{ती} हैं और सच में ₹150 मिलते हैं। सब असली लगता है!"],
+    ["money", "'For bigger tasks, invest ₹10,000 first.' Then ₹50,000 'to withdraw'.", "'बड़े टास्क के लिए पहले ₹10,000 लगाओ।' फिर 'निकालने के लिए' ₹50,000 और।"],
+    ["gone", "The chat group disappears with all the money.", "चैट ग्रुप सारे पैसे लेकर ग़ायब हो जाता है।"],
+    ["safe", "Instead: {N} knew a real job never asks you to pay. {She} blocked the number.", "सही तरीका: {N} जान{ती} {थीं} कि असली नौकरी पैसे नहीं माँगती। उन्होंने नंबर ब्लॉक कर दिया।"]] },
+  job_fee: { def: { brand: { en: "a big company", hi: "बड़ी कंपनी" }, fee: { en: "₹500", hi: "₹500" }, big: { en: "₹25,000 a month", hi: "₹25,000 महीना" } }, panels: [
+    ["msg", "A message for {N}'s grandchild: 'Selected for a job at {brand}! Salary {big}.'", "{N} के पोते-पोती के लिए मैसेज: '{brand} में नौकरी के लिए चुने गए! सैलरी {big}।'"],
+    ["msg", "'Just pay {fee} for registration and the training kit.' It sounds small.", "'बस रजिस्ट्रेशन और ट्रेनिंग किट के लिए {fee} भरें।' रकम छोटी लगती है।"],
+    ["money", "After {fee} come 'uniform', 'ID card' and 'security deposit' fees.", "{fee} के बाद 'यूनिफ़ॉर्म', 'ID कार्ड' और 'सिक्योरिटी डिपॉज़िट' की फीस आती है।"],
+    ["gone", "No joining letter ever comes. The 'HR' number is switched off.", "कोई जॉइनिंग लेटर नहीं आता। 'HR' का नंबर बंद हो जाता है।"],
+    ["safe", "Instead: {N} checked the company's real careers page. Real jobs never ask for a fee.", "सही तरीका: {N} ने कंपनी की असली वेबसाइट पर नौकरियाँ देखीं। असली नौकरी कभी फीस नहीं माँगती।"]] },
+  wallet: { def: { first: { en: "₹15,000", hi: "₹15,000" } }, panels: [
+    ["msg", "'{first} bonus credited to your wallet! Withdraw now.'", "'आपके वॉलेट में {first} का बोनस आया है! अभी निकालें।'"],
+    ["form", "{N} opens the link to withdraw it. The page asks for {her} bank login.", "{N} पैसे निकालने के लिए लिंक खोल{ती} हैं। पेज बैंक का लॉगिन माँगता है।"],
+    ["otp", "'Enter the OTP to receive the money.' {She} does.", "'पैसे पाने के लिए OTP डालें।' {N} डाल दे{ती} हैं।"],
+    ["money", "There was no bonus. Instead, ₹38,000 leaves {her} account.", "कोई बोनस नहीं था। उल्टा, खाते से ₹38,000 निकल जाते हैं।"],
+    ["safe", "Instead: {N} knew free money does not drop into a wallet {she} never opened.", "सही तरीका: {N} जान{ती} {थीं} कि जिस वॉलेट को कभी खोला ही नहीं, उसमें मुफ़्त पैसा नहीं आता।"]] },
+  loan: { def: { big: { en: "₹2,50,000", hi: "₹2,50,000" } }, panels: [
+    ["msg", "'Your loan of {big} is approved! Zero documents.'", "'आपका {big} का लोन मंज़ूर! कोई काग़ज़ नहीं चाहिए।'"],
+    ["app", "The link installs a loan app. It asks to read contacts and photos.", "लिंक से एक लोन ऐप आता है। वह कॉन्टैक्ट और फ़ोटो पढ़ने की अनुमति माँगता है।"],
+    ["money", "'Pay ₹2,999 processing fee first.' The loan never comes.", "'पहले ₹2,999 प्रोसेसिंग फीस भरें।' लोन कभी नहीं आता।"],
+    ["gone", "Then threats start, and messages go to {her} contacts.", "फिर धमकियाँ शुरू होती हैं, और {N} के कॉन्टैक्ट्स को मैसेज जाते हैं।"],
+    ["safe", "Instead: {N} asked {her} own bank. Real loans never come by random SMS.", "सही तरीका: {N} ने अपने बैंक से पूछा। असली लोन किसी अनजान SMS से नहीं आता।"]] },
+  prize: { def: { big: { en: "₹25 lakh", hi: "₹25 लाख" }, fee: { en: "₹12,500", hi: "₹12,500" } }, panels: [
+    ["gift", "'Congratulations! You have won {big}!'", "'बधाई हो! आपने {big} जीते हैं!'"],
+    ["call", "'To release the prize, first pay {fee} tax and share your account number.'", "'इनाम पाने के लिए पहले {fee} टैक्स भरें और खाता नंबर बताएं।'"],
+    ["money", "Then a 'processing fee'. Then a 'GST charge'. It never ends.", "फिर 'प्रोसेसिंग फीस'। फिर 'GST चार्ज'। यह कभी ख़त्म नहीं होता।"],
+    ["gone", "No prize ever comes. ₹70,000 is gone.", "इनाम कभी नहीं आता। ₹70,000 चले जाते हैं।"],
+    ["safe", "Instead: {N} knew you cannot win a contest you never entered.", "सही तरीका: {N} जान{ती} {थीं} कि जिसमें हिस्सा ही नहीं लिया, उसमें इनाम नहीं मिलता।"]] },
+  otp: { def: { brand: { en: "your bank", hi: "बैंक" } }, panels: [
+    ["call", "'{brand} here. Someone is logging in to your account!'", "'मैं {brand} से बोल रहा हूँ। कोई आपके खाते में लॉगिन कर रहा है!'"],
+    ["otp", "'Share the OTP we sent, and we will block them.' {N} reads it out.", "'हमने जो OTP भेजा है वह बताइए, हम उसे रोक देंगे।' {N} OTP बता दे{ती} हैं।"],
+    ["money", "That OTP was the key. ₹60,000 moves out of {her} account.", "वह OTP ही चाबी थी। खाते से ₹60,000 निकल जाते हैं।"],
+    ["gone", "The 'officer's' number is switched off.", "'अफ़सर' का नंबर बंद हो जाता है।"],
+    ["safe", "Instead: {N} hung up and called the number on the back of {her} card.", "सही तरीका: {N} ने फ़ोन काटा और कार्ड के पीछे लिखे नंबर पर कॉल किया।"]] },
+  debit: { def: { brand: { en: "bank", hi: "बैंक" }, first: { en: "₹49,999", hi: "₹49,999" } }, panels: [
+    ["msg", "'{first} debited from your {brand} account. Not you? Share the OTP to block it.'", "'आपके {brand} खाते से {first} कट गए। आपने नहीं किया? रोकने के लिए OTP बताएं।'"],
+    ["otp", "In a panic, {N} shares the OTP to 'stop' it.", "घबराकर {N} 'रोकने' के लिए OTP बता दे{ती} हैं।"],
+    ["money", "Nothing had been taken before. Now that OTP takes real money.", "पहले कुछ नहीं कटा था। अब उसी OTP से असली पैसे कट जाते हैं।"],
+    ["gone", "The 'helpline' number is switched off.", "'हेल्पलाइन' नंबर बंद हो जाता है।"],
+    ["safe", "Instead: {N} opened the {brand} app. No such debit. {She} deleted the message.", "सही तरीका: {N} ने {brand} का ऐप खोला। ऐसा कोई पैसा नहीं कटा था। उन्होंने मैसेज डिलीट कर दिया।"]] },
+  card: { def: { brand: { en: "bank", hi: "बैंक" } }, panels: [
+    ["msg", "'Your {brand} card is blocked. Call this number to unblock it.'", "'आपका {brand} कार्ड ब्लॉक हो गया है। चालू करने के लिए इस नंबर पर कॉल करें।'"],
+    ["call", "The 'officer' asks for the card number and CVV 'to verify'.", "'अफ़सर' 'जाँच के लिए' कार्ड नंबर और CVV माँगता है।"],
+    ["otp", "Then the OTP. {N} reads it out.", "फिर OTP। {N} वह भी बता दे{ती} हैं।"],
+    ["money", "Online shopping on {her} card: ₹1,20,000 in an hour.", "{N} के कार्ड से एक घंटे में ₹1,20,000 की ऑनलाइन ख़रीदारी।"],
+    ["safe", "Instead: {N} called the number on the back of the card. It was never blocked.", "सही तरीका: {N} ने कार्ड के पीछे लिखे नंबर पर कॉल किया। कार्ड कभी ब्लॉक नहीं था।"]] },
+  takeover: { def: { brand: { en: "WhatsApp", hi: "WhatsApp" } }, panels: [
+    ["msg", "'Your {brand} account will be closed. Share the 6-digit code to keep it.'", "'आपका {brand} अकाउंट बंद हो जाएगा। चालू रखने के लिए 6 अंकों का कोड बताएं।'"],
+    ["otp", "{N} shares the code. Minutes later, {she} is logged out.", "{N} कोड बता दे{ती} हैं। कुछ ही मिनट में उनका अकाउंट बंद हो जाता है।"],
+    ["family", "The scammer, pretending to be {N}, messages family: 'Urgent, send money.'", "ठग {N} बनकर परिवार को मैसेज करता है: 'जल्दी पैसे भेजो।'"],
+    ["money", "Two relatives send ₹40,000 before anyone realises.", "किसी को पता चलने से पहले दो रिश्तेदार ₹40,000 भेज देते हैं।"],
+    ["safe", "Instead: {N} never shared the code. A real app never asks for it.", "सही तरीका: {N} ने कोड किसी को नहीं बताया। असली ऐप कभी कोड नहीं माँगता।"]] },
+  family: { def: { first: { en: "₹35,000", hi: "₹35,000" }, when: { en: "today", hi: "आज" } }, panels: [
+    ["msg", "'Hi {mum}, this is my new number. I dropped my phone.'", "'{mum}, यह मेरा नया नंबर है। मेरा फ़ोन गिर गया।'"],
+    ["msg", "'Can you pay a bill for me {when}? I can't talk right now.'", "'{when} मेरा एक बिल भर {दोगी}? अभी बात नहीं कर सकता।'"],
+    ["money", "{N} sends {first}. Then they ask for more.", "{N} {first} भेज दे{ती} हैं। फिर और पैसे माँगे जाते हैं।"],
+    ["family", "Later the real child calls from the old number: 'What new number?'", "बाद में असली बच्चा पुराने नंबर से कॉल करता है: 'कौन सा नया नंबर?'"],
+    ["safe", "Instead: {N} called the old number first. Everyone was fine.", "सही तरीका: {N} ने पहले पुराने नंबर पर कॉल किया। सब ठीक थे।"]] },
+  remote: { def: {}, panels: [
+    ["call", "'Please install this app so I can help you.'", "'आप यह ऐप डाल लीजिए, मैं आपकी मदद कर दूँगा।'"],
+    ["app", "The app lets him see and control {N}'s phone.", "इस ऐप से ठग {N} का फ़ोन देख और चला सकता है।"],
+    ["otp", "Every OTP that arrives, he reads it first.", "जो भी OTP आता है, वह उसे पहले पढ़ लेता है।"],
+    ["money", "The bank account is emptied in minutes.", "कुछ ही मिनटों में बैंक खाता ख़ाली हो जाता है।"],
+    ["safe", "Instead: {N} refused to install anything. Banks never ask for that.", "सही तरीका: {N} ने कोई ऐप नहीं डाला। बैंक कभी ऐसा नहीं कहते।"]] },
+  invest: { def: {}, panels: [
+    ["msg", "'Join our stock tips group. Guaranteed 30% returns!'", "'हमारे शेयर टिप्स ग्रुप से जुड़ें। पक्का 30% मुनाफ़ा!'"],
+    ["paid", "{N} invests ₹20,000. The app shows ₹31,000 profit!", "{N} ₹20,000 लगा{ती} हैं। ऐप में ₹31,000 मुनाफ़ा दिखता है!"],
+    ["money", "'Invest ₹2 lakh more for the VIP plan.' {She} does.", "'VIP प्लान के लिए ₹2 लाख और लगाइए।' {N} लगा दे{ती} हैं।"],
+    ["gone", "{She} tries to withdraw: 'Pay 20% tax first.' Then the app vanishes.", "पैसे निकालने पर: 'पहले 20% टैक्स भरें।' फिर ऐप ही ग़ायब।"],
+    ["safe", "Instead: {N} checked if the advisor was SEBI-registered. It was not.", "सही तरीका: {N} ने देखा कि सलाहकार SEBI में रजिस्टर्ड है या नहीं। वह नहीं था।"]] },
+  refund: { def: { first: { en: "₹15,490", hi: "₹15,490" } }, panels: [
+    ["msg", "'Refund of {first} approved. Click to receive it.'", "'{first} का रिफंड मंज़ूर। पाने के लिए क्लिक करें।'"],
+    ["form", "The page asks for {her} card number and expiry 'to send the refund'.", "पेज 'रिफंड भेजने के लिए' कार्ड नंबर और एक्सपायरी माँगता है।"],
+    ["otp", "Then an OTP. {She} types it in.", "फिर एक OTP। {N} वह भी डाल दे{ती} हैं।"],
+    ["money", "No refund comes. Instead ₹45,000 goes out.", "कोई रिफंड नहीं आता। उल्टा ₹45,000 निकल जाते हैं।"],
+    ["safe", "Instead: {N} checked the official website. Real refunds reach the bank on their own.", "सही तरीका: {N} ने असली वेबसाइट देखी। असली रिफंड अपने आप बैंक में आता है।"]] },
+  generic: { def: {}, panels: [
+    ["msg", "A message arrives with a link and a reason to hurry.", "जल्दबाज़ी वाला एक मैसेज लिंक के साथ आता है।"],
+    ["form", "The link asks for {N}'s bank or card details.", "लिंक {N} से बैंक या कार्ड की जानकारी माँगता है।"],
+    ["otp", "Then an OTP, 'just to verify'.", "फिर 'सिर्फ़ जाँच के लिए' एक OTP।"],
+    ["money", "Money leaves the account before anyone understands what happened.", "समझने से पहले ही खाते से पैसे निकल जाते हैं।"],
+    ["safe", "Instead: {N} ignored the link and checked with the company directly.", "सही तरीका: {N} ने लिंक नहीं खोला और सीधे कंपनी से पता किया।"]] },
+};
+
+function fill(str, ctx) {
+  return str.replace(/\{([^}]+)\}/g, (all, k) => (ctx[k] ?? all));
+}
+
+// panels: [{scene, caption}] with the last one as the safe ending. quote: words from the message for panel 1.
+function renderComic(panels, noteText, quote) {
+  const box = $("comic");
+  box.innerHTML = "";
+  panels.forEach((pn, i) => {
+    const last = i === panels.length - 1;
+    const d = document.createElement("figure");
+    d.className = "cpanel" + (last ? " ending" : "");
+    d.style.margin = "0";
+    d.innerHTML = `<figcaption class="cap"><span></span><div></div></figcaption>${sceneSvg(last ? "safe" : pn.scene)}`;
+    d.querySelector(".cap span").textContent = last ? "✓" : String(i + 1);
+    const capText = d.querySelector(".cap div");
+    capText.textContent = pn.caption;
+    if (i === 0 && quote) {
+      const q = document.createElement("small");
+      q.className = "from-msg";
+      q.textContent = t("fromMsg") + " “" + quote + "”";
+      capText.append(q);
+    }
+    box.append(d);
+  });
+  $("comic-note").textContent = noteText;
+  $("comic-wrap").hidden = false;
+}
+
+function localComic(r, text) {
+  const s = STORIES[r.story] || STORIES.generic;
+  const d = details(text);
+  const who = ELDERS[ELDER][lang];
+  const ctx = { ...who };
+  for (const k of ["first", "fee", "big", "when", "brand", "agency"]) {
+    const v = d[k] || s.def[k];
+    if (v) ctx[k] = typeof v === "string" ? v : v[lang];
+  }
+  // Panel 1 quotes the strongest part of the real message.
+  const top = r.hits[0]?.matches[0];
+  let quote = "";
+  if (top) {
+    quote = text.slice(top.s, top.e).trim();
+    if (quote.length > 70) quote = quote.slice(0, 67) + "...";
+  }
+  renderComic(s.panels.map(([scene, en, hi]) => ({ scene, caption: fill(lang === "hi" ? hi : en, ctx) })), t("comicNoteLocal"), quote);
+}
+
+// ---------- Rendering ----------
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let lang = "en";
+try { if (localStorage.getItem("scamshield-lang") === "hi") lang = "hi"; } catch {}
+const t = k => UI[lang][k];
+const L = o => (o && typeof o === "object") ? (o[lang] ?? o.en) : (o ?? "");
+const bandIdx = p => p >= 60 ? 2 : p >= 25 ? 1 : 0;
+const BAND_CLS = ["v-safe", "v-warn", "v-scam"];
+
+function highlight(text, spans) {
+  const sorted = [...spans].sort((a, b) => a.s - b.s || b.e - a.e);
+  let out = "", pos = 0;
+  for (const sp of sorted) {
+    if (sp.s < pos) continue; // overlap: keep the first
+    out += esc(text.slice(pos, sp.s)) + "<mark>" + esc(text.slice(sp.s, sp.e)) + "<sup>" + sp.n + "</sup></mark>";
+    pos = sp.e;
+  }
+  return out + esc(text.slice(pos));
+}
+
+let last = null;
+function render(text) {
+  text = text.trim();
+  if (!text) return;
+  const r = analyze(text);
+  const bi = bandIdx(r.p), b = t("bands")[bi];
+  last = { text, r, bi };
+  $("stamp").className = "stamp " + BAND_CLS[bi];
+  $("pct").textContent = r.p + "%";
+  $("word").textContent = b.word;
+  $("v-title").textContent = b.title;
+  $("v-sub").textContent = b.sub;
+  $("needle").style.left = r.p + "%";
+
+  $("msg-wrap").hidden = false;
+  $("msg-view").innerHTML = highlight(text, r.spans);
+
+  const ol = $("tricks");
+  ol.innerHTML = "";
+  r.hits.forEach((h, i) => {
+    const li = document.createElement("li");
+    li.className = "trick" + (h.rule.tone === "mild" ? " mild" : "");
+    li.innerHTML = `<span class="n">${i + 1}</span><b></b><p></p><span class="real"></span>`;
+    li.querySelector("b").textContent = L(h.rule.name);
+    li.querySelector("p").textContent = L(h.rule.why);
+    li.querySelector(".real").textContent = t("whatsReal") + L(h.rule.real);
+    ol.append(li);
+  });
+  r.good.forEach(g => {
+    const li = document.createElement("li");
+    li.className = "trick good";
+    li.innerHTML = `<span class="n">✓</span><b></b><p></p>`;
+    li.querySelector("b").textContent = L(g.name);
+    li.querySelector("p").textContent = L(g.why);
+    ol.append(li);
+  });
+
+  ELDER = pickElder(text);
+  if (r.p >= 25) localComic(r, text); else $("comic-wrap").hidden = true;
+
+  $("todo").innerHTML = t("todo")[bi].map(x => "<li>" + esc(x) + "</li>").join("");
+  $("todo-wrap").hidden = false;
+  $("copy").hidden = false;
+  $("copy-note").textContent = "";
+}
+
+function renderEmpty() {
+  $("stamp").className = "stamp";
+  $("pct").textContent = "0%";
+  $("word").textContent = "";
+  $("v-title").textContent = t("empty");
+  $("v-sub").textContent = "";
+}
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t(el.dataset.t); });
+  $("footer").innerHTML = t("footer");
+  $("acc-note").innerHTML = t("accNote");
+  $("msg").placeholder = t("placeholder");
+  $("l-en").setAttribute("aria-pressed", lang === "en");
+  $("l-hi").setAttribute("aria-pressed", lang === "hi");
+  setDropText();
+  const ex = $("examples");
+  ex.innerHTML = "";
+  EXAMPLES.forEach(e => {
+    const b = document.createElement("button");
+    b.className = "chip" + (e.safe ? " safe" : "");
+    b.type = "button";
+    b.textContent = L(e.label);
+    b.onclick = () => { $("msg").value = e.text; clearAi(); render(e.text); };
+    ex.append(b);
+  });
+  clearAi(); // Claude answered in the other language; ask again for this one
+  if (last) render(last.text); else renderEmpty();
+}
+function setLang(l) {
+  lang = l;
+  try { localStorage.setItem("scamshield-lang", l); } catch {}
+  applyLang();
+}
+$("l-en").onclick = () => setLang("en");
+$("l-hi").onclick = () => setLang("hi");
+
+$("check").onclick = () => { clearAi(); render($("msg").value); };
+$("msg").addEventListener("keydown", e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) $("check").click(); });
+
+let shot = null;
+function setDropText() {
+  [...$("drop").querySelectorAll("img,.x")].forEach(n => n.remove());
+  const d = $("drop-text");
+  if (!shot) { d.textContent = t("drop"); return; }
+  const img = document.createElement("img");
+  img.alt = "";
+  img.src = URL.createObjectURL(shot);
+  $("drop").insertBefore(img, d);
+  d.textContent = shot.name + t("attached");
+  const x = document.createElement("button");
+  x.className = "link x"; x.type = "button"; x.textContent = t("remove");
+  x.onclick = ev => { ev.preventDefault(); $("shot").value = ""; shot = null; setDropText(); };
+  $("drop").append(x);
+}
+$("shot").onchange = () => { shot = $("shot").files[0] || null; setDropText(); };
+
+$("copy").onclick = () => {
+  if (!last) return;
+  const lines = [
+    t("copyHead")(last.r.p, t("bands")[last.bi].word),
+    `${t("copyMsg")}: "${last.text.slice(0, 160)}${last.text.length > 160 ? "..." : ""}"`,
+    ...last.r.hits.map((h, i) => `${i + 1}. ${L(h.rule.name)}`),
+    t("copyEnd"),
+  ];
+  navigator.clipboard.writeText(lines.join("\n")).then(
+    () => $("copy-note").textContent = t("copied"),
+    () => $("copy-note").textContent = t("copyFail")
+  );
+};
+
+// ---------- Second opinion from Claude ----------
+let sample = null, ctl = null, aiResult = null;
+function clearAi() { ctl?.abort(); aiResult = null; $("ai").hidden = true; }
+
+(async () => {
+  try { sample = await window.claude?.use?.("sample"); } catch { sample = null; }
+  if (sample) $("ask").hidden = false;
+})();
+
+function renderAi(a) {
+  const p = Math.max(0, Math.min(100, Math.round(Number(a.probability) || 0)));
+  const bi = bandIdx(p);
+  $("ai").hidden = false;
+  $("ai-pill").textContent = p + "% · " + (a.scam_type || t("bands")[bi].word);
+  $("ai-pill").className = "pill " + BAND_CLS[bi];
+  $("ai-status").textContent = "";
+  $("ai-sum").textContent = a.summary || "";
+  $("ai-tricks").innerHTML = "";
+  (a.tricks || []).slice(0, 4).forEach(tr => {
+    const li = document.createElement("li");
+    li.className = "trick plain" + (bi === 0 ? " good" : bi === 1 ? " mild" : "");
+    li.innerHTML = `<b></b><span class="quote"></span><p></p>`;
+    li.querySelector("b").textContent = tr.name || "";
+    li.querySelector(".quote").textContent = tr.quote ? "“" + tr.quote + "”" : "";
+    li.querySelector("p").textContent = tr.why || "";
+    $("ai-tricks").append(li);
+  });
+  $("ai-todo").innerHTML = (a.do_now || []).slice(0, 3).map(x => "<li>" + esc(x) + "</li>").join("");
+  // Claude's comic is made for this exact message, so it replaces the typical one.
+  const story = Array.isArray(a.story) ? a.story.filter(s => s && s.caption).slice(0, 4) : [];
+  if (p >= 25 && story.length >= 3 && a.safe_ending) {
+    renderComic([...story.map(s => ({ scene: String(s.scene || "msg"), caption: String(s.caption) })), { scene: "safe", caption: String(a.safe_ending) }], t("comicNoteAi"));
+  }
+}
+
+$("ask").onclick = async () => {
+  const text = $("msg").value.trim();
+  if (!text && !shot) { $("ai").hidden = false; $("ai-status").textContent = t("aiNeed"); return; }
+  if (text) render(text);
+  const language = lang === "hi" ? "simple Hindi in Devanagari script" : "simple English";
+  const found = last && text ? last.r.hits.map(h => h.rule.name.en).join("; ") || "nothing" : "not run (screenshot only)";
+  const scenes = Object.keys(SCENES).filter(s => s !== "safe").join(", ");
+
+  const prompt = `You are ScamShield, helping older people in India decide whether a message is a scam.
+Judge the message below${shot ? " and the attached screenshot" : ""}. Think about Indian fraud patterns: fake KYC/PAN/Aadhaar updates, UPI collect requests or "enter PIN to receive", OTP sharing, parcel/customs holds, "digital arrest" by fake police/CBI, electricity disconnection, part-time job/task scams, fake investment groups, lottery/KBC, "new number" family emergencies, fake refunds, remote-access apps or APK links, lookalike web addresses. Also allow that it may be a genuine message from a bank or shop.
+A simple pattern checker flagged: ${found}.
+
+Write every text field in ${language}, in very plain words for a grandparent.
+Reply with ONLY a JSON object, no other text:
+{"probability": integer 0-100 that this is a scam,
+ "verdict": "likely_scam" | "suspicious" | "likely_safe",
+ "scam_type": short name of the scam type, or "" if safe,
+ "summary": two short sentences,
+ "tricks": [ {"name": trick name, "quote": exact short phrase copied from the message in its original language, "why": one simple sentence} ] (0 to 4 items),
+ "do_now": [ up to 3 short steps ],
+ "story": [ exactly 4 comic panels showing what would happen to "${ELDERS[ELDER].en.N}" (${ELDER === "dadaji" ? "a grandfather, he" : "a grandmother, she"}) if they believed THIS message, step by step, ending with her losing money. Each is {"scene": one of ${scenes}, "caption": one sentence of at most 16 words, using the real names and amounts from the message where possible} ] (use [] if the message looks safe),
+ "safe_ending": one sentence starting with ${lang === "hi" ? '"सही तरीका:"' : '"Instead:"'} saying what ${ELDERS[ELDER].en.N} does to stay safe ("" if safe),
+ "extracted_text": ${shot ? "the full message text read from the screenshot" : '""'} }
+
+Message:
+"""${text || "(see screenshot)"}"""`;
+
+  aiResult = null;
+  $("ai").hidden = false;
+  $("ai-pill").textContent = ""; $("ai-pill").className = "pill";
+  $("ai-sum").textContent = ""; $("ai-tricks").innerHTML = ""; $("ai-todo").innerHTML = "";
+  $("ai-status").textContent = t("aiThinking");
+  $("ask").disabled = true;
+  ctl = new AbortController();
+  try {
+    const opts = { signal: ctl.signal };
+    if (shot) opts.images = [shot];
+    const a = await sample.json(prompt, opts);
+    if (shot && !text && a.extracted_text) { $("msg").value = a.extracted_text; render(a.extracted_text); }
+    aiResult = a;
+    renderAi(a);
+  } catch (e) {
+    if (e?.code !== "cancelled") $("ai-status").textContent = t("errors")[e?.code] || t("errors").other;
+  } finally {
+    $("ask").disabled = false;
+  }
+};
+
+// Open in a working state with a sample loaded.
+$("msg").value = EXAMPLES[lang === "hi" ? 1 : 0].text;
+last = { text: $("msg").value };
+applyLang();
+</script>
+
+</body>
+</html>
