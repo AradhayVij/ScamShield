@@ -51,7 +51,7 @@ A message counts as "likely scam" at 60% or more, and as "flagged" at 25% or mor
 | Scams marked "likely scam" | 35.1% | 77.2% |
 | Scams flagged at least "be careful" | 84.2% | 94.7% |
 | Personal messages wrongly flagged | 1.5% | 1.1% |
-| Adverts and notices wrongly flagged | 40.9% | 3.5% |
+| Adverts and notices wrongly flagged | 40.9% | 3.1% |
 
 On the `tune` part the new rules reach 95.9%. The gap to 77.2% shows the rules partly fit the examples we studied, which is why the test number is the honest one.
 

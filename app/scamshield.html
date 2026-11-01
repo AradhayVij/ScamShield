@@ -295,7 +295,7 @@ footer a { color: var(--accent); }
       <div class="tile"><b>77%</b><span data-t="acc1"></span></div>
       <div class="tile"><b>95%</b><span data-t="acc2"></span></div>
       <div class="tile"><b>1.1%</b><span data-t="acc3"></span></div>
-      <div class="tile"><b>3.5%</b><span data-t="acc4"></span></div>
+      <div class="tile"><b>3.1%</b><span data-t="acc4"></span></div>
     </div>
     <p class="small" id="acc-note"></p>
   </section>
@@ -415,6 +415,7 @@ const EXAMPLES = [
   { label: { en: "Parcel (Hinglish)", hi: "पार्सल (हिंग्लिश)" }, text: "Namaste ji, aapka parcel customs mein ruka hai. Turant Rs 49 fee jama karo warna parcel wapas chala jayega: https://bit.ly/ip-parcel" },
   { label: { en: "UPI 'cashback'", hi: "UPI 'कैशबैक'" }, text: "Hello sir, I am calling from PhonePe. You got Rs 4,999 cashback. I have sent a collect request, just enter your UPI PIN to receive the money in your account." },
   { label: { en: "Digital arrest", hi: "डिजिटल अरेस्ट" }, text: "This is Mumbai Cyber Crime Cell. A parcel with drugs in your name was seized by customs. An arrest warrant has been issued. Stay on video call, do not tell family. Transfer Rs 2,50,000 to RBI verification account to clear your name." },
+  { label: { en: "E-challan", hi: "ई-चालान" }, text: "प्रिय वाहन मालिक, आपकी गाड़ी पर ₹1,500 का ई-चालान जारी हुआ है। कोर्ट केस से बचने के लिए 24 घंटे में भुगतान करें: https://echallan-parivahan.xyz/pay" },
   { label: { en: "Electricity cut", hi: "बिजली कट" }, text: "प्रिय उपभोक्ता, आपकी बिजली आज रात 9:30 बजे काट दी जाएगी क्योंकि आपका पिछला बिल अपडेट नहीं हुआ है। तुरंत बिजली अधिकारी से 8123456721 पर संपर्क करें।" },
   { label: { en: "Part-time job", hi: "पार्ट टाइम जॉब" }, text: "Hi! We are hiring for work from home. Like YouTube videos and earn Rs 3000 daily. Simple tasks, commission paid instantly. Join our Telegram: t.me/earnfast_hr" },
   { label: { en: "'New number'", hi: "'नया नंबर'" }, text: "Hi Mum, this is my new number, I dropped my phone. Can you help me urgently? I need to pay a bill today, I will return it tomorrow. Please don't call, I can't talk right now." },
@@ -492,7 +493,7 @@ const RULES = [
     re: [/\byour\b[^.\n]{0,25}\b(account|card|sim|yono|wallet|number|connection|balance|services?)\b[^.\n]{0,35}\b(blocked|suspended|frozen|freeze|locked|deactivated|closed|stop working)\b/gi,
          /\b(will be|has been|is)\s+(permanently\s+)?(blocked|suspended|deactivated|disconnected|frozen|locked)\b/gi,
          /\b(suspicious|fraudulent) activity\b|\bunauthori[sz]ed (login|access)\b|\bunusual login\b|\btried logging\b|\bnew device\b|\blegal action\b|\bbeing ported\b|\bpassword (was|has been) changed\b|\bflagged\b/gi,
-         /\b(khata|account|sim)\b[^.\n]{0,30}\b(band|block)\s*(ho|kar)/gi, /(खाता|अकाउंट|सिम|कार्ड)[^.।\n]{0,30}(बंद|ब्लॉक)/g],
+         /\b(aapk[aie]|apk[aie]|tumhar[aie])\b[^.\n]{0,25}\b(khata|account|sim|connection|gas|bijli|number|card|wallet)\b[^.\n]{0,30}\b(band|block)\s*(ho|kar)/gi, /(खाता|अकाउंट|सिम|कार्ड|कनेक्शन|गैस|नंबर)[^.।\n]{0,30}(बंद|ब्लॉक)/g],
     name: { en: "Scares you about your account", hi: "खाते के बारे में डरा रहा है" },
     why: { en: "'Blocked', 'suspicious login', 'legal action': fear is used so you act without thinking.", hi: "'ब्लॉक', 'संदिग्ध लॉगिन', 'क़ानूनी कार्रवाई': डर दिखाकर आपसे बिना सोचे काम करवाया जाता है।" },
     real: { en: "A real bank gives notice through its app and branch, with time to respond.", hi: "असली बैंक ऐप और ब्रांच के ज़रिए पहले से सूचना देता है और समय देता है।" } },
@@ -501,6 +502,12 @@ const RULES = [
     name: { en: "Says money left your account that you did not spend", hi: "कहता है कि आपके खाते से ऐसे पैसे कटे जो आपने नहीं ख़र्च किए" },
     why: { en: "A fake 'big debit' alert makes you panic and share an OTP to 'stop' it. That OTP is what actually takes the money.", hi: "नकली 'बड़ी रकम कटी' वाला अलर्ट आपको घबराता है ताकि आप 'रोकने' के लिए OTP बता दें। असल में वही OTP पैसे ले जाता है।" },
     real: { en: "Open your bank app to check. Real alerts give a toll-free number and never ask for an OTP.", hi: "बैंक ऐप खोलकर देखें। असली अलर्ट में टोल-फ्री नंबर होता है और कभी OTP नहीं माँगा जाता।" } },
+  { id: "challan", role: "lure", w: 30, story: "challan",
+    re: [/\b(e-?challan|traffic (fine|challan|violation)|challan)\b/gi, /\b(court case|licen[cs]e (suspension|suspended|cancel\w*|will be suspended)|vehicle (number )?(seized|blacklisted))\b/gi,
+         /(ई-?चालान|चालान|कोर्ट केस|लाइसेंस (रद्द|निलंबित|सस्पेंड))/g],
+    name: { en: "Fake traffic fine (e-challan)", hi: "नकली ट्रैफ़िक चालान (ई-चालान)" },
+    why: { en: "Fake challan messages threaten a court case and send a look-alike Parivahan link that steals card details.", hi: "नकली चालान मैसेज कोर्ट केस का डर दिखाते हैं और परिवहन जैसी दिखने वाली लिंक से कार्ड की जानकारी चुराते हैं।" },
+    real: { en: "Check challans only on echallan.parivahan.gov.in or the mParivahan app.", hi: "चालान सिर्फ़ echallan.parivahan.gov.in या mParivahan ऐप पर देखें।" } },
   { id: "power", role: "lure", w: 30, story: "power",
     re: [/\b(electricity|power|light)\b[^\n]{0,60}\b(will be (cut|disconnected)|disconnection|disconnected (today|tonight))/gi, /\belectricity (officer|bill)\b[^\n]{0,40}\b(failed|pending|not updated|disconnect\w*)/gi, /\bbijli\b[^.\n]{0,40}\b(kat|cut|band)/gi, /बिजली[^।\n]{0,60}(कट|काट|बंद)/g, /बिजली (अधिकारी|अफ़सर|अफसर)/g],
     name: { en: "Electricity will be 'cut tonight'", hi: "'आज रात बिजली कट जाएगी'" },
@@ -570,7 +577,7 @@ const RULES = [
     why: { en: "Hurry stops you from thinking or asking someone. Real organisations give you time.", hi: "जल्दबाज़ी में आप सोच नहीं पाते और किसी से पूछ नहीं पाते। असली संस्थाएँ समय देती हैं।" },
     real: { en: "It is always fine to wait, hang up and check.", hi: "रुकना, फ़ोन काटना और जाँच करना हमेशा ठीक है।" } },
   { id: "money", role: "style", w: 15, tone: "mild",
-    re: [/\b(pay|transfer|send|deposit)\b[^.\n]{0,25}(rs\.?|₹|inr|rupees|amount|money)/gi, /(रुपये|₹|पैसे)[^.।\n]{0,25}(भेजें|भेजिए|भेज दो|जमा करें|ट्रांसफर करें)/g],
+    re: [/\b(pay|transfer|send|deposit)\b[^.\n]{0,25}(rs\.?|₹|inr|rupees|amount|money)/gi, /(रुपये|₹|पैसे)[^.।\n]{0,25}(भेजें|भेजिए|भेज दो|जमा करें|ट्रांसफर करें)/g, /(भुगतान करें|पेमेंट करें|भुगतान कीजिए)/g],
     name: { en: "Asks you to pay or transfer money", hi: "पैसे भेजने या ट्रांसफर करने को कह रहा है" },
     why: { en: "A request for money is how most of these scams end.", hi: "पैसे की माँग ज़्यादातर फ्रॉड का आख़िरी कदम होती है।" },
     real: { en: "Never pay to receive a prize, parcel, refund or job.", hi: "इनाम, पार्सल, रिफंड या नौकरी पाने के लिए कभी पैसे न भेजें।" } },
@@ -619,13 +626,13 @@ const GOOD = {
 const SHORTENERS = /^(bit\.ly|tinyurl\.com|cutt\.ly|is\.gd|t\.ly|rb\.gy|shorturl\.at|tiny\.cc|ow\.ly|s\.id|rebrand\.ly|v\.gd|qr\.ae|t\.co|1kx\.in|gmg\.im|sr3\.in|oi1\.in)$/i;
 const ODD_TLD = /\.(xyz|top|click|info|live|icu|shop|online|site|buzz|cyou|monster|rest|sbs|cfd|vip|win|link|support|help)$/i;
 const OFFICIAL = /(^|\.)(sbi\.co\.in|onlinesbi\.sbi|hdfcbank\.com|icicibank\.com|axisbank\.com|kotak\.com|pnbindia\.in|paytm\.com|phonepe\.com|amazon\.in|amazon\.com|flipkart\.com|indiapost\.gov\.in|incometax\.gov\.in|uidai\.gov\.in|gov\.in|nic\.in|npci\.org\.in|rbi\.org\.in|airtel\.in|myvi\.in|jio\.com|fkrt\.it|goo\.gl)$/i;
-const BRAND_WORDS = /(sbi|yono|hdfc|icici|axis|kotak|paytm|phonepe|gpay|npci|rbi|uidai|aadhaar|aadhr|incometax|indiapost|kyc|amazon|flipkart|bank)/i;
+const BRAND_WORDS = /(sbi|yono|hdfc|icici|axis|kotak|paytm|phonepe|gpay|npci|rbi|uidai|aadhaar|aadhr|incometax|indiapost|kyc|amazon|flipkart|bank|parivahan|challan)/i;
 const LINK_RE = /\b(?:https?:\/\/|www\.)[^\s<>"]+|\b[a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+)*\.(?:com|in|net|org|co|ly|gd|me|xyz|top|click|info|live|icu|shop|online|site|link|at|cc|ae|sbi|io|im|it|to)\b(?:\/[^\s<>"]*)?/gi;
 const SAFE_OTP = /\b(do not|don'?t|never) share\b|share na kar|(शेयर|साझा) न करें|किसी को न बताएं|किसी के साथ (शेयर|साझा) न/i;
 const PROMO = /%\s?off\b|\bt\s?&\s?c|\btnc\b|\buse code\b|\bmrp\b|\bsale\b|\brecharge (with|of|now|for)\b|\/kg\b|\bgb\/d(ay)?\b|unlimited calls|\bott\b|subscription|\boffer\b|\bdeals?\b|\bshop now\b|\bapply now\b|\bbuy\s?\d\b|\bb\dg\d\b|\bmovies?\b|\bstreaming\b|\bwatch\b|\bdata pack\b|\bplan\b|\brummy\b|\bplay\b/i;
 const WARNING = /\bbeware of\b|\bnever (asks?|sends?|calls?|makes?)\b|\bdo not (respond|click|download)\b|\bdon'?t (respond|click|download)\b|\badvises you\b|\breport (suspected )?fraud\b|\bfake (calls|messages|links|jobs)\b|\bverify the credentials\b|\bbe (alert|cautious)\b|सावधान रहें|झांसे में न आएं/i;
 const MESSAGING = /\b(telegram|t\.me|whatsapp|wa\.me)\b/i;
-const STORY_PRIORITY = ["arrest", "pin", "remote", "power", "family", "task", "job_fee", "wallet", "loan", "prize", "card", "takeover", "debit", "otp", "kyc", "parcel", "invest", "refund", "generic"];
+const STORY_PRIORITY = ["arrest", "pin", "remote", "power", "challan", "family", "task", "job_fee", "wallet", "loan", "prize", "card", "takeover", "debit", "otp", "kyc", "parcel", "invest", "refund", "generic"];
 
 function hostOf(u) {
   const s = u.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
@@ -684,7 +691,11 @@ function analyze(text) {
     else if (PROMO.test(text)) { score -= 15; good.push(GOOD.promo); }
     if (SAFE_OTP.test(text) && !has("link-") && !has("callme")) { score -= 15; good.push(GOOD.otp); }
   }
-  if (officialLink && !has("link-")) good.push(GOOD.link);
+  if (officialLink && !has("link-")) {
+    good.push(GOOD.link);
+    // Points only to the real website and asks for nothing: a normal notice or receipt.
+    if (!ask && !otherLink && !has("callme")) score -= 20;
+  }
 
   score = Math.max(0, score);
   const p = score === 0 ? 4 : Math.round(Math.min(97, Math.max(3, 100 * (1 - Math.exp(-score / 45)))));
@@ -818,7 +829,7 @@ const BRANDS = [
   [/\bflipkart\b/i, "Flipkart"], [/\bindia ?post\b|इंडिया पोस्ट/i, "India Post"], [/\bwhatsapp\b/i, "WhatsApp"], [/\binstagram\b/i, "Instagram"],
   [/\bnetflix\b/i, "Netflix"], [/\bgoogle\b/i, "Google"], [/\binfosys\b/i, "Infosys"], [/\btcs\b/i, "TCS"], [/\bwipro\b/i, "Wipro"],
   [/\bhcl\b/i, "HCL"], [/\btata\b/i, "Tata"], [/\breliance\b/i, "Reliance"], [/\bairtel\b/i, "Airtel"], [/\bjio\b/i, "Jio"],
-  [/\b(vodafone|vi)\b/i, "Vi"], [/\bkbc\b/i, "KBC"], [/\buidai\b|\baadhaar\b|आधार/i, "Aadhaar"],
+  [/\b(vodafone|vi)\b/i, "Vi"], [/\bkbc\b/i, "KBC"], [/\bindane\b/i, "Indane"], [/\bhp gas\b/i, "HP Gas"], [/\bbharat gas\b/i, "Bharat Gas"], [/\buidai\b|\baadhaar\b|आधार/i, "Aadhaar"],
 ];
 const AGENCIES = [[/\bcbi\b|सीबीआई/i, "CBI"], [/\bcustoms\b|कस्टम/i, { en: "Customs", hi: "कस्टम" }], [/\bcyber ?crime\b/i, { en: "Cyber Crime", hi: "साइबर क्राइम" }], [/\bpolice\b|पुलिस/i, { en: "Police", hi: "पुलिस" }]];
 const UNIT_HI = { lakh: "लाख", lakhs: "लाख", crore: "करोड़", thousand: "हज़ार", "लाख": "लाख", "करोड़": "करोड़" };
@@ -985,6 +996,12 @@ const STORIES = {
     ["otp", "Then an OTP. {She} types it in.", "फिर एक OTP। {N} वह भी डाल दे{ती} हैं।"],
     ["money", "No refund comes. Instead ₹45,000 goes out.", "कोई रिफंड नहीं आता। उल्टा ₹45,000 निकल जाते हैं।"],
     ["safe", "Instead: {N} checked the official website. Real refunds reach the bank on their own.", "सही तरीका: {N} ने असली वेबसाइट देखी। असली रिफंड अपने आप बैंक में आता है।"]] },
+  challan: { def: { first: { en: "₹1,500", hi: "₹1,500" }, when: { en: "today", hi: "आज" } }, panels: [
+    ["msg", "'Traffic e-challan of {first} on your vehicle. Pay {when} or face a court case.'", "'आपकी गाड़ी पर {first} का ई-चालान। {when} भरें, वरना कोर्ट केस होगा।'"],
+    ["form", "{N} opens the link. It looks like the government Parivahan site. {She} enters {her} card details.", "{N} लिंक खोल{ती} हैं। पेज सरकारी परिवहन साइट जैसा दिखता है। वे कार्ड की जानकारी डाल दे{ती} हैं।"],
+    ["otp", "An OTP arrives 'to confirm the fine'. {She} types it in.", "'चालान पक्का करने के लिए' OTP आता है। {N} वह भी डाल दे{ती} हैं।"],
+    ["money", "Instead of {first}, ₹62,000 is taken from the card.", "{first} की जगह कार्ड से ₹62,000 कट जाते हैं।"],
+    ["safe", "Instead: {N} checked on the official echallan.parivahan.gov.in site. There was no challan.", "सही तरीका: {N} ने असली साइट echallan.parivahan.gov.in पर देखा। कोई चालान नहीं था।"]] },
   generic: { def: {}, panels: [
     ["msg", "A message arrives with a link and a reason to hurry.", "जल्दबाज़ी वाला एक मैसेज लिंक के साथ आता है।"],
     ["form", "The link asks for {N}'s bank or card details.", "लिंक {N} से बैंक या कार्ड की जानकारी माँगता है।"],
